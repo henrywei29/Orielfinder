@@ -1,4 +1,4 @@
-﻿#ifndef Payload
+#ifndef Payload
   #error Payload directory must be supplied by the build script
 #endif
 #ifndef Output
@@ -47,7 +47,7 @@ procedure InitializeWizard;
 begin
   TrustPage := CreateInputOptionPage(wpInfoBefore, '安装证书 / Certificate trust',
     '此测试发行版使用自签名证书 / This build uses a self-signed certificate',
-    '仅将 OrielFolder 公钥证书加入 Windows Trusted People，用于验证此应用。不会加入根证书库、关闭安全防护或修改默认文件关联。本向导需要管理员权限；证书仅在勾选同意后才会安装。', False, False);
+    '将 OrielFolder 公钥证书加入 Windows Trusted People，并开启 Windows“允许安装受信任的应用”（旁加载）设置，用于安装此应用。不会加入根证书库、开启开发者模式、关闭安全防护或修改默认文件关联。本向导需要管理员权限；仅在勾选同意后才会进行上述更改。', False, False);
   TrustPage.Add('我同意安装此应用的签名证书 / I agree to trust this app certificate');
 end;
 function NextButtonClick(CurPageID: Integer): Boolean;

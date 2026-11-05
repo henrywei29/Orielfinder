@@ -70,6 +70,18 @@ try {
             Copy-Item -LiteralPath (Join-Path $source $name) -Destination (Join-Path $destination $name) -Force
         }
     }
+    # MSIX sideloading requires "Allow trusted apps" (AllowAllTrustedApps). Some Windows installs ship with
+    # it disabled, which makes Add-AppxPackage fail with 0x80073CFF. Organisation policy is respected, not overridden.
+    $policy = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Appx' -Name 'AllowAllTrustedApps' -ErrorAction SilentlyContinue
+    if ($policy -and $policy.AllowAllTrustedApps -eq 0) {
+        throw '此电脑的组策略禁止安装受信任的旁加载应用（AllowAllTrustedApps=0），安装已停止且未修改系统。请联系电脑管理员。'
+    }
+    $unlockKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock'
+    if (!(Test-Path -LiteralPath $unlockKey)) { New-Item -Path $unlockKey -Force | Out-Null }
+    $current = (Get-ItemProperty -LiteralPath $unlockKey -Name 'AllowAllTrustedApps' -ErrorAction SilentlyContinue).AllowAllTrustedApps
+    if ($current -ne 1) {
+        Set-ItemProperty -LiteralPath $unlockKey -Name 'AllowAllTrustedApps' -Type DWord -Value 1 -Force
+    }
     if (!(Test-Path -LiteralPath "Cert:\LocalMachine\TrustedPeople\$($certificate.Thumbprint)")) {
         Import-Certificate -FilePath $certificatePath -CertStoreLocation Cert:\LocalMachine\TrustedPeople | Out-Null
     }
