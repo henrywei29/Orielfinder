@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseIntermediateOutputPath>D:\codex\Orielfolder-development\annotation-export-tests\obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>D:\codex\Orielfolder-development\annotation-export-tests\bin\</BaseOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PDFsharp-gdi" Version="6.2.2" />
+    <Compile Include="..\..\src\Span\Span\Models\PreviewAnnotation.cs" Link="PreviewAnnotation.cs" />
+    <Compile Include="..\..\src\Span\Span\Services\PreviewAnnotationExportService.cs" Link="PreviewAnnotationExportService.cs" />
+    <Compile Include="..\..\src\Span\Span\Services\ImagePreviewSnapshot.cs" Link="ImagePreviewSnapshot.cs" />
+  </ItemGroup>
+</Project>
