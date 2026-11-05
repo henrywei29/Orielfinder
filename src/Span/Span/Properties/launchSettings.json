@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OrielFolder (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "OrielFolder (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

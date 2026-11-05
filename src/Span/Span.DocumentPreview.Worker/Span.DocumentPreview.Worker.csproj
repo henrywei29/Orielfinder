@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><!-- Separate-process Office COM worker, not loaded by the .NET 8 main app. --><ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>OrielFolder.DocumentPreview.Worker</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="All" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' blob: data:; connect-src 'self' https://document.span.local; img-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Document preview</title>
+  <link rel="stylesheet" href="text-layer.css">
+  <link rel="stylesheet" href="preview.css">
+  <script type="module" src="preview.mjs"></script>
+</head>
+<body>
+  <nav id="annotationControls" aria-label="文字选择与批注">
+    <div id="documentControls" role="group" aria-label="Document controls">
+    <button id="previous" title="Previous page" aria-label="Previous page">‹</button>
+    <input id="page" type="number" min="1" value="1" aria-label="Page number">
+    <span id="count">/ …</span>
+    <button id="next" title="Next page" aria-label="Next page">›</button>
+    </div>
+  </nav>
+  <main id="pages" tabindex="0" aria-label="Read-only document"></main>
+  <div id="zoomControls" role="group" aria-label="文档缩放">
+    <button id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+    <input id="zoomSlider" type="range" min="0.1" step="0.1" max="400" value="100" aria-label="缩放比例"><span id="zoom">100%</span>
+    <button id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+    <button id="fit" title="Fit width">↔</button>
+    <button id="actual" title="Actual size">1:1</button>
+  </div>
+  <p id="status" role="status">Loading document…</p>
+</body>
+</html>

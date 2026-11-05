@@ -1,0 +1,92 @@
+:root {
+  color-scheme: light dark;
+  font-family: "Segoe UI", sans-serif;
+  --preview-chrome: light-dark(#f5f5f3, #29292c);
+  --preview-card: light-dark(#ffffff, #323235);
+  --preview-border: light-dark(#24242824, #ffffff26);
+  --preview-hover: light-dark(#2424280d, #ffffff12);
+  --preview-shadow: 0 2px 8px #00000014;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; overflow: hidden; color: light-dark(#222, #eee); background: light-dark(#fff, #000); }
+nav { height: 36px; display: flex; gap: 3px; align-items: center; padding: 3px 4px; background: var(--preview-chrome); color: light-dark(#222,#eee); border-bottom: 1px solid var(--preview-border); overflow-x: auto; white-space: nowrap; }
+button, input, select { font: inherit; font-size: 12px; color: inherit; background: transparent; border: 1px solid var(--preview-border); border-radius: 8px; min-height: 24px; padding: 1px 5px; }
+button { cursor: pointer; }
+button:hover { background: var(--preview-hover); }
+button:focus-visible, input:focus-visible, main:focus-visible { outline: 2px solid #4ca9fa; outline-offset: -2px; }
+#documentControls { display: flex; gap: 2px; align-items: center; flex-shrink: 0; }
+#page { width: 38px; text-align: center; }
+#count, #zoom { min-width: 32px; text-align: center; font-size: 11px; }
+.separator { width: 1px; height: 22px; background: var(--preview-border); margin: 0 5px; }
+#pages { height: 100vh; overflow: scroll; padding: 6px; position: relative; overscroll-behavior: contain; }
+#pages::-webkit-scrollbar { width: 10px; height: 10px; background: light-dark(#f4f4f4, #202020); }
+#pages::-webkit-scrollbar-thumb { background: light-dark(#909090, #888); border: 2px solid light-dark(#f4f4f4, #202020); border-radius: 6px; }
+#pages::-webkit-scrollbar-corner { background: light-dark(#f4f4f4, #202020); }
+#pages[data-pan="true"], #pages[data-pan="true"] .textLayer, #pages[data-pan="true"] .ocr-word { cursor: grab; user-select: none; }
+#pages.panning, #pages.panning * { cursor: grabbing !important; user-select: none !important; }
+.page { position: relative; background: white; margin: 0 auto 6px; box-shadow: 0 1px 3px #0004; overflow: clip; flex-shrink: 0; }
+.page canvas { position: absolute; inset: 0; display: block; }
+.page .textLayer { z-index: 1; }
+#status { position: fixed; top: 58px; left: 50%; transform: translateX(-50%); z-index: 10; width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 12px; background: var(--preview-chrome); border: 1px solid var(--preview-border); border-radius: 12px; box-shadow: var(--preview-shadow); font-size: 12px; }
+#loadProgress { width: 100%; height: 6px; accent-color: #1971c2; }
+button[aria-pressed="true"] { background: #1971c233; border-color: #4ca9fa; }
+#annotationControls { position: absolute; top: 0; width: max-content; gap: 3px; height: auto; min-height: 34px; max-height: calc(100vh - 8px); flex-wrap: wrap; white-space: normal; max-width: calc(100vw - 76px); overflow-y: auto; border: 1px solid var(--preview-border); border-radius: 10px; box-shadow: var(--preview-shadow); }
+#annotationControls button { padding-inline: 5px; flex-shrink: 0; }
+#annotationControls .icon-button { width: 28px; padding: 2px 4px; display: inline-flex; align-items: center; justify-content: center; }
+.icon-button svg { width: 18px; height: 18px; pointer-events: none; }
+#annotationText { width: 80px; flex-shrink: 0; }
+#annotationColor { width: 28px; padding: 2px; flex-shrink: 0; cursor: pointer; }
+#labelPresets { width: 110px; max-width: 100%; }
+#manageLabelPresets { width: 28px; flex-shrink: 0; }
+#labelPresetEditor { display: flex; flex-wrap: wrap; gap: 3px; width: 100%; padding-top: 4px; border-top: 1px solid var(--preview-border); }
+#toolbarOrderStatus { flex-basis: 100%; font-size: 11px; overflow-wrap: anywhere; }
+#annotationControls.toolbar-editing { border-color: #4ca9fa; }
+.toolbar-editing > .toolbar-group { cursor: grab; touch-action: none; border-color: #4ca9fa88; background: #1971c20a; }
+.toolbar-editing > .toolbar-group > * { pointer-events: none; }
+.toolbar-drag-source { opacity: 0.25; }
+#toolbarDragGhost { position: fixed; z-index: 20; pointer-events: none; padding: 2px 4px; background: var(--preview-chrome); border-color: #4ca9fa; box-shadow: var(--preview-shadow); }
+.toolbar-group { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; max-width: 100%; padding: 2px; border: 1px solid var(--preview-border); border-radius: 8px; }
+.toolbar-caption { font-size: 11px; }
+#annotationWidth, #annotationOpacity { width: 64px; min-width: 36px; padding: 0; height: 22px; accent-color: #1971c2; }
+#annotationWidthValue, #annotationOpacityValue { min-width: 22px; text-align: center; font-size: 11px; }
+#annotationOpacityValue { min-width: 30px; }
+#group-labels { row-gap: 3px; }
+#annotationControls input:disabled { opacity: .4; }
+#toolbarDragGhost.toolbar-group { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; border: 1px solid #4ca9fa; border-radius: 8px; }
+#readerDock { position: fixed; right: 16px; bottom: 16px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 3px; max-width: calc(100vw - 32px); padding: 2px 3px; border: 1px solid var(--preview-border); border-radius: 10px; color: light-dark(#222,#eee); background: var(--preview-chrome); box-shadow: var(--preview-shadow); }
+#zoomControls { display: flex; align-items: center; gap: 2px; height: 28px; max-width: 100%; padding: 2px; }
+#documentControls { padding: 2px 4px; border-right: 1px solid var(--preview-border); }
+#zoomControls button { min-width: 22px; min-height: 22px; padding: 0 4px; border-color: transparent; }
+#zoomSlider { width: 64px; min-width: 32px; height: 18px; min-height: 0; padding: 0; accent-color: #737373; }
+.annotationLayer { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; overflow: hidden; }
+.annotationLayer.drawing { pointer-events: all; cursor: crosshair; touch-action: none; user-select: none; }
+.annotationLayer > * { pointer-events: none; }
+#toolPalette { position: fixed; top: 12px; right: 12px; z-index: 7; width: 34px; height: 34px; }
+#toolPalette[data-side="left"] #annotationControls { right: calc(100% + 4px); left: auto; }
+#toolPalette[data-side="right"] #annotationControls { left: calc(100% + 4px); right: auto; }
+#toolToggle, #thumbnailToggle { width: 34px; height: 34px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: light-dark(#222,#eee); background: var(--preview-chrome); border-radius: 10px; box-shadow: var(--preview-shadow); }
+#toolToggle { touch-action: manipulation; }
+#toolToggle svg, #thumbnailToggle svg { width: 22px; height: 22px; pointer-events: none; }
+#thumbnailToggle { position: fixed; left: 12px; top: 12px; z-index: 8; }
+#thumbnails { position: fixed; inset: 0 auto 0 0; width: 150px; background: var(--preview-chrome); border-right: 1px solid var(--preview-border); }
+.thumbnailTitle { height: 56px; padding: 20px 8px 8px 56px; font-size: 12px; color: light-dark(#444,#ddd); }
+#thumbnailList { height: calc(100vh - 56px); overflow: auto; padding: 4px 8px 12px; display: flex; flex-direction: column; gap: 8px; }
+.thumbnailItem { position: relative; min-height: 154px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; padding: 7px; border: 2px solid transparent; border-radius: 10px; background: var(--preview-card); color: light-dark(#555,#ddd); font-size: 11px; }
+.thumbnailItem canvas { max-width: 104px; height: auto; background: white; box-shadow: 0 1px 3px #0002; }
+.thumbnailItem[aria-current="page"] { border-color: #4ca9fa; background: #1971c224; }
+.thumbnails-open #pages { margin-left: 150px; width: calc(100% - 150px); }
+.ocr-layer { position: absolute; inset: 0; z-index: 1; overflow: hidden; color: transparent; user-select: text; }
+.ocr-word { position: absolute; color: transparent; cursor: text; white-space: pre; line-height: 1; transform-origin: 0 0; user-select: text; font-family: sans-serif; }
+.ocr-word::selection { color: transparent; background: #3390ff66; }
+#imageFrame { position: relative; margin: auto; flex-shrink: 0; }
+#imageStage { position: absolute; left: 50%; top: 50%; margin: 0; background: transparent; transform-origin: center; }
+#sourceImage { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; }
+@media (max-width: 350px) { nav { padding-inline: 2px; gap: 2px; } #annotationControls button { padding-inline: 4px; } #zoomSlider { width: 48px; } }
+
+/* Keep the content canvas crisp; system contrast colors apply only to controls. */
+@media (forced-colors: active) {
+  :root { --preview-chrome: Canvas; --preview-card: Canvas; --preview-border: ButtonText; --preview-hover: Highlight; --preview-shadow: none; }
+  nav, #readerDock, #toolToggle, #thumbnailToggle, #status, .thumbnailTitle, .thumbnailItem { color: CanvasText; }
+  button[aria-pressed="true"], .thumbnailItem[aria-current="page"] { border-color: Highlight; }
+}
