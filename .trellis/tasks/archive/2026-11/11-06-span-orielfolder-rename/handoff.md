@@ -6,7 +6,7 @@
 - **Task & phase:** Continue the Span → OrielFolder rename on top of Antigravity's uncommitted work. Trellis phase 3 (check).
   Status: **complete — finished and archived with user approval ("提交结束"); committed on branch `rename/orielfolder`.**
   Safe internal rename verified (compile of a copy + unit). Persisted/compat identifiers kept by user decision.
-  Runtime check (level 4) still not done.
+  Runtime check (level 4) done after the commit: build-dev.ps1 0 errors, start-dev.ps1 launched the Dev app (home view, clean log).
 - **Git at handoff:** before the commit: branch `main`, HEAD `59a4af3`, no stash, staged diff sha1 `3793885a…` unchanged until
   the user-approved commit; 256 `R`, 398 `RM`, 104 ` M`, 140 `??` (start: 259 / 395 / 100 / 135). Snapshots:
   `D:\codex\Orielfolder-dev\rename-task-20261106\status-{before,after}.txt`.
@@ -74,7 +74,13 @@ Trellis (created/modified): this task dir; `spec/project/rename-migration-status
   (live/side-effect/parameterised: not run).
 - Consistency: every `OrielFolder*` theme key referenced in XAML/C#/tests is defined in `App.xaml` (except the 11 unsuffixed
   palette keys written at runtime — same as before the rename); no `Span*` theme key left; all XAML files parse as XML.
-- **Not run:** runtime check (level 4: `build-dev.ps1` + `start-dev.ps1`), UI tests, live/integration scripts, `.mjs` tests.
+- **Runtime (level 4, after the commit, user-approved):** `build-dev.ps1` → 0 errors / 178 warnings (stopped the open Dev app);
+  `start-dev.ps1` → `Started OrielFolder Dev (PID 15732, LocalDevelopment.OrielFolderDev_1.0.1.0_x64__tvznpbczqragy)`, process
+  Responding, title "OrielFolder Dev"; window capture (`D:\codex\...\runtime-window.png`) shows home view with themed sidebar,
+  cards, borders, secondary text and accent bars rendering; new log `Span_Debug_20261106_111702.log` starts with
+  `=== OrielFolder Debug Log`, 50 lines, no exception/error. Not exercised: Settings, theme/accent switching, Quick Look,
+  dialogs, thumbnails (worker not triggered), document preview, tray menu.
+- **Not run:** UI tests, live/integration scripts, `.mjs` tests.
 
 ### Failed approaches
 - `dotnet test ... --source <dir>` → MSB1001 unknown switch. Use `dotnet restore --source` then `dotnet test --no-restore`.
@@ -118,3 +124,5 @@ With the Dev app closed (ask the user first), run `build-dev.ps1` + `start-dev.p
   SPAN_* test env vars. Recorded in Current State and spec (section renamed "Kept by user decision"). No code changed.
 - 2026-11-06 [Claude Code] User said "提交结束" and chose scope "rename + Trellis" on a new branch. Ran task.py finish + archive,
   recorded journal, then created branch `rename/orielfolder` and committed by explicit path list (see Current State).
+- 2026-11-06 11:20 [Claude Code] User approved runtime check. build-dev.ps1 EXIT 0 (0 errors); start-dev.ps1 started Dev PID 15732;
+  home view renders, new debug log clean. Leaves this handoff + journal modified (uncommitted) on rename/orielfolder.

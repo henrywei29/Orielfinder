@@ -147,3 +147,33 @@ User approved commit (scope: staged renames + tracked modifications + rename-rel
 
 - Runtime check with build-dev.ps1 + start-dev.ps1 when the Dev app may be closed
 - Decide push/merge of rename/orielfolder; release manifest identity is Dev on this branch
+
+
+## Session 5: [Claude Code] Runtime check of renamed OrielFolder Dev build
+<!-- trellis-session: v=2 fp=a56aac0cea37e911 -->
+
+**Date**: 2026-11-06
+**Task**: [Claude Code] Runtime check of renamed OrielFolder Dev build
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+User-approved build-dev.ps1 + start-dev.ps1 on branch rename/orielfolder: build 0 errors, Dev app launched, home view renders with renamed theme keys, startup log clean
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] [OK] build-dev.ps1: 0 errors, 178 warnings
+- [OK] [OK] start-dev.ps1: Dev PID 15732 responding, title OrielFolder Dev, log clean
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Exercise Settings/theme switch/Quick Look/dialogs manually
+- Decide push/merge of rename/orielfolder; handle release manifest identity
