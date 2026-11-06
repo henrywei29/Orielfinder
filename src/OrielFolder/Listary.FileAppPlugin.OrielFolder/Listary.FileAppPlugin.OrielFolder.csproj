@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <AssemblyName>Listary.FileAppPlugin.OrielFolderDev</AssemblyName>
+    <AssemblyName>Listary.FileAppPlugin.OrielFolder</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
   </PropertyGroup>
   <ItemGroup>

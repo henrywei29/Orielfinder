@@ -22,7 +22,7 @@ namespace Listary.FileAppPlugin.OrielFolder
             {
                 Native.GetWindowThreadProcessId(handle, out var processId);
                 using (var process = Process.GetProcessById((int)processId))
-                    if (!string.Equals(process.ProcessName, "OrielFolderDev", StringComparison.OrdinalIgnoreCase)) return null;
+                    if (!string.Equals(process.ProcessName, "OrielFolder", StringComparison.OrdinalIgnoreCase)) return null;
                 // The dedicated endpoint also distinguishes main windows from dialogs/tool windows.
                 return Native.QueryTextWindow(handle) != IntPtr.Zero ? new OrielFolderWindow(handle) : null;
             }

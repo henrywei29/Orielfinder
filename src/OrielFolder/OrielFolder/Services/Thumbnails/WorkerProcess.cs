@@ -73,7 +73,7 @@ internal sealed class WorkerProcess : IDisposable
     {
         try
         {
-            PipeName = $"OrielFolderDev.Thumbs.{Environment.ProcessId}.{_workerId}.{Guid.NewGuid():N}";
+            PipeName = $"OrielFolder.Thumbs.{Environment.ProcessId}.{_workerId}.{Guid.NewGuid():N}";
 
             var psi = new ProcessStartInfo
             {

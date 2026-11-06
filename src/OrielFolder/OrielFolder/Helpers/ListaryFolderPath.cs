@@ -4,7 +4,7 @@ namespace OrielFolder.Helpers
 {
     public static class ListaryFolderPath
     {
-        public const string QueryMessageName = "OrielFolderDev.Listary.GetCurrentFolder.v1";
+        public const string QueryMessageName = "OrielFolder.Listary.GetCurrentFolder.v1";
 
         public static string Normalize(string path)
         {

@@ -11,8 +11,8 @@ internal sealed class AppSettings(IDictionary<string, object> values)
     internal static AppSettings LocalSettings { get; } = new(new DesktopSettingsStore());
 
     // The development package family for the current user.
-    private const string LegacyFamily = "LocalDevelopment.OrielFolderDev_tvznpbczqragy";
-    private const string MigrationKey = "OrielDevDesktopMigrationCompleted";
+    private const string LegacyFamily = "OrielFolder.Desktop_zd9dpwnktq3x8";
+    private const string MigrationKey = "OrielDesktopMigrationCompleted";
 
     internal static void MigrateLegacyData()
     {

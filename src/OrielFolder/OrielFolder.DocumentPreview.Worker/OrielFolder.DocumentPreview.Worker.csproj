@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><!-- Separate-process Office COM worker, not loaded by the .NET 8 main app. --><ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>OrielFolderDev.DocumentPreview.Worker</AssemblyName>
+    <AssemblyName>OrielFolder.DocumentPreview.Worker</AssemblyName>
     <LangVersion>latest</LangVersion>
     <Platforms>x86;x64;ARM64</Platforms>
     <PlatformTarget>AnyCPU</PlatformTarget>

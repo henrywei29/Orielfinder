@@ -25,9 +25,9 @@ public class DevelopmentIsolationTests
     public void PackageIdentityCannotReplaceOfficialPackage()
     {
         var identity = Manifest.Root!.Elements().Single(e => e.Name.LocalName == "Identity");
-        Assert.AreEqual("LocalDevelopment.OrielFolderDev", (string?)identity.Attribute("Name"));
-        Assert.AreEqual("CN=OrielFolder Dev", (string?)identity.Attribute("Publisher"));
-        CollectionAssert.AreEqual(new[] { "OrielFolder Dev", "OrielFolder Dev" }, Manifest.Descendants()
+        Assert.AreEqual("OrielFolder.Desktop", (string?)identity.Attribute("Name"));
+        Assert.AreEqual("CN=OrielFolder", (string?)identity.Attribute("Publisher"));
+        CollectionAssert.AreEqual(new[] { "OrielFolder", "OrielFolder" }, Manifest.Descendants()
             .Where(e => e.Name.LocalName == "DisplayName" || e.Name.LocalName == "VisualElements")
             .Select(e => e.Name.LocalName == "DisplayName" ? e.Value : (string)e.Attribute("DisplayName")!)
             .ToArray());
@@ -38,14 +38,14 @@ public class DevelopmentIsolationTests
     {
         var aliases = Manifest.Descendants().Where(e => e.Name.LocalName == "ExecutionAlias")
             .Select(e => (string)e.Attribute("Alias")!).ToArray();
-        CollectionAssert.AreEqual(new[] { "orielfolder-dev.exe" }, aliases);
+        CollectionAssert.AreEqual(new[] { "orielfolder.exe" }, aliases);
         Assert.IsFalse(Manifest.Descendants().Any(e => e.Name.LocalName == "FileTypeAssociation"));
     }
 
     [TestMethod]
     public void MainAndWorkerUseIndependentExecutableNames()
     {
-        foreach (var (folder, expected) in new[] { ("OrielFolder", "OrielFolderDev"), ("OrielFolder.Thumbs", "OrielFolderDev.Thumbs") })
+        foreach (var (folder, expected) in new[] { ("OrielFolder", "OrielFolder"), ("OrielFolder.Thumbs", "OrielFolder.Thumbs") })
         {
             var project = XDocument.Load(Path.Combine(ProjectRoot, "src", "OrielFolder", folder, folder + ".csproj"));
             Assert.AreEqual(expected, project.Descendants("AssemblyName").SingleOrDefault()?.Value);
@@ -58,8 +58,8 @@ public class DevelopmentIsolationTests
         var identity = typeof(ActionLogService).Assembly.GetType("OrielFolder.Helpers.AppIdentity");
         Assert.IsNotNull(identity, "Development runtime identity must be shared by storage consumers.");
         var root = (string)identity.GetProperty("LocalDataRoot", BindingFlags.Public | BindingFlags.Static)!.GetValue(null)!;
-        Assert.AreEqual(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OrielFolderDev"), root);
-        Assert.AreEqual("ORIEL_FOLDER_DEV_MAIN", identity.GetField("SingleInstanceKey")!.GetRawConstantValue());
+        Assert.AreEqual(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OrielFolder"), root);
+        Assert.AreEqual("ORIEL_FOLDER_MAIN", identity.GetField("SingleInstanceKey")!.GetRawConstantValue());
         Assert.AreEqual(false, identity.GetField("AllowsDefaultAssociations")!.GetRawConstantValue());
     }
 
@@ -83,8 +83,8 @@ public class DevelopmentIsolationTests
     public void ArchiveCleanupPreservesOfficialVersionsTemporaryFiles()
     {
         var fixture = Path.Combine(Path.GetTempPath(), "OrielFolderIsolation_" + Guid.NewGuid().ToString("N"));
-        var official = Path.Combine(fixture, "OrielFolderArchive_disposable_official");
-        var development = Path.Combine(fixture, "OrielFolderDevArchive_disposable_development");
+        var official = Path.Combine(fixture, "OrielFolderDevArchive_disposable_development");
+        var development = Path.Combine(fixture, "OrielFolderArchive_disposable_release");
         var oldTemp = Environment.GetEnvironmentVariable("TEMP");
         var oldTmp = Environment.GetEnvironmentVariable("TMP");
         try
@@ -104,8 +104,8 @@ public class DevelopmentIsolationTests
                 .GetMethod("CleanupStaleStagingFolders", BindingFlags.NonPublic | BindingFlags.Static)!
                 .Invoke(null, null);
 
-            Assert.IsTrue(File.Exists(Path.Combine(official, "sentinel.txt")), "Development cleanup must preserve official-version files.");
-            Assert.IsFalse(Directory.Exists(development), "Development cleanup should still clean its own stale files.");
+            Assert.IsTrue(File.Exists(Path.Combine(official, "sentinel.txt")), "Release cleanup must preserve the development build's files.");
+            Assert.IsFalse(Directory.Exists(development), "Release cleanup should still clean its own stale files.");
         }
         finally
         {

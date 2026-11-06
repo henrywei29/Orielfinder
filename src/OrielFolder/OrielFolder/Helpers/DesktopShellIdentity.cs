@@ -4,7 +4,7 @@ namespace OrielFolder.Helpers;
 
 internal static class DesktopShellIdentity
 {
-    internal const string AppId = "OrielFolderDev.Desktop.Win32";
+    internal const string AppId = "OrielFolder.Desktop.Win32";
 
     internal static void Initialize()
     {

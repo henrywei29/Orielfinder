@@ -54,7 +54,7 @@ public static class OrielFolderAppFixture
 
         if (_app == null || _app.HasExited)
         {
-            var processes = Process.GetProcessesByName("OrielFolderDev");
+            var processes = Process.GetProcessesByName("OrielFolder");
             if (processes.Length == 0)
             {
                 throw new InvalidOperationException(
@@ -274,7 +274,7 @@ public static class OrielFolderAppFixture
         try
         {
             if (_app == null || _automation == null) return null;
-            var process = System.Diagnostics.Process.GetProcessesByName("OrielFolderDev");
+            var process = System.Diagnostics.Process.GetProcessesByName("OrielFolder");
             if (process.Length == 0) return null;
             return _app.GetMainWindow(_automation);
         }

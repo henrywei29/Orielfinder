@@ -6313,7 +6313,7 @@ namespace OrielFolder
                 using var stream = await reader.OpenEntryAsync(archiveFilePath, internalPath);
 
                 var fileName = System.IO.Path.GetFileName(internalPath);
-                var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "OrielFolderDev_Archive");
+                var tempDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "OrielFolder_Archive");
                 System.IO.Directory.CreateDirectory(tempDir);
                 var tempFile = System.IO.Path.Combine(tempDir, fileName);
 

@@ -1,13 +1,13 @@
 {
   "ManifestVersion": 1,
-  "Id": "OrielFolderDev",
+  "Id": "OrielFolder",
   "PluginType": "FileAppPlugin",
   "PluginVersion": "0.1.0",
-  "DisplayName": "OrielFolder Dev",
+  "DisplayName": "OrielFolder",
   "Authors": ["OrielFolder contributors"],
-  "Description": "Provides the active OrielFolder Dev folder to Listary Quick Switch.",
+  "Description": "Provides the active OrielFolder folder to Listary Quick Switch.",
   "Icon": "Icon.png",
   "Api": "NetFramework",
   "ApiVersion": 1,
-  "Entry": "Listary.FileAppPlugin.OrielFolderDev.dll"
+  "Entry": "Listary.FileAppPlugin.OrielFolder.dll"
 }

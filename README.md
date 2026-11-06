@@ -8,13 +8,13 @@ End users do not need the build toolchain to install Orielfolder. Use the prebui
 
 Orielfolder 是面向 Windows 10/11 的现代桌面文件管理器开源仓库与发行包。仓库包含完整的 WinUI 3 桌面主程序、缩略图与 Office/PDF 文档预览工作进程、Listary 6 集成插件、自动化测试脚本以及预构建的 Windows x64 安装程序。
 
-普通用户无需配置开发环境或从源码编译，可直接使用 [`dist/`](dist/) 目录下的预构建安装包 [`OrielFolder-1.0.1-x64-Setup.exe`](dist/OrielFolder-1.0.1-x64-Setup.exe) 完成安装。
+普通用户无需配置开发环境或从源码编译，可直接使用 [`dist/`](dist/) 目录下的预构建安装包 [`OrielFolder-1.0.2-x64-Setup.exe`](dist/OrielFolder-1.0.2-x64-Setup.exe) 完成安装。
 
 ## Repository contents
 
 | Path | Description |
 | :--- | :--- |
-| [`dist/`](dist/) | Prebuilt Windows x64 setup installer (`OrielFolder-1.0.1-x64-Setup.exe`) and installation notes (`install-notice.txt`) / 预构建 Windows x64 安装程序与安装说明 |
+| [`dist/`](dist/) | Prebuilt Windows x64 setup installer (`OrielFolder-1.0.2-x64-Setup.exe`) and installation notes (`install-notice.txt`) / 预构建 Windows x64 安装程序与安装说明 |
 | [`src/`](src/) | Solution source code (`OrielFolder` main app, `OrielFolder.Thumbs` worker, `OrielFolder.DocumentPreview.Worker`, `Listary.FileAppPlugin.OrielFolder`, `OrielFolder.Tests`, `OrielFolder.UITests`) / 核心源码与测试工程 |
 | [`installer/`](installer/) | Inno Setup script (`OrielFolder.iss`) and PowerShell setup helpers (`Install-OrielFolder.ps1`, `Install-OrielFolder-Machine.ps1`) / 安装向导配置与脚本 |
 | [`tests/`](tests/) | Integration, UI layout, preview, and regression verification scripts / 集成测试与回归验证脚本 |
@@ -26,8 +26,8 @@ Orielfolder 是面向 Windows 10/11 的现代桌面文件管理器开源仓库�
 
 ## Quick installation (Prebuilt `.exe`)
 
-1. Download the `dist/` folder (`OrielFolder-1.0.1-x64-Setup.exe` together with `OrielFolder-1.0.1-x64-Setup-1.bin` ~ `-3.bin` in the same directory) or the single-file installer from [GitHub Releases](https://github.com/henrywei29/Orielfinder/releases).
-2. Double-click `OrielFolder-1.0.1-x64-Setup.exe` on Windows 10 (version 2004 / build 19041) or Windows 11 (x64).
+1. Download the `dist/` folder (`OrielFolder-1.0.2-x64-Setup.exe` together with `OrielFolder-1.0.2-x64-Setup-1.bin` ~ `-3.bin` in the same directory) or the single-file installer from [GitHub Releases](https://github.com/henrywei29/Orielfinder/releases).
+2. Double-click `OrielFolder-1.0.2-x64-Setup.exe` on Windows 10 (version 2004 / build 19041) or Windows 11 (x64).
 3. Review the installation notice, check **I agree to trust this app certificate / 我同意安装此应用的签名证书** (adds the self-signed public certificate to Windows `Trusted People` for MSIX package verification), and optionally enable the desktop shortcut or **Listary 6 integration**.
 4. Launch **Orielfolder** from the Start Menu or desktop shortcut.
 

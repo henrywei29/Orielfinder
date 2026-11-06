@@ -12,16 +12,16 @@ internal static class DevelopmentPackageActivation
         try
         {
             var packages = new Windows.Management.Deployment.PackageManager()
-                .FindPackagesForUser("", "LocalDevelopment.OrielFolderDev", "CN=OrielFolder Dev");
+                .FindPackagesForUser("", "OrielFolder.Desktop", "CN=OrielFolder");
             foreach (var package in packages)
                 if (!package.IsFramework && !package.IsResourcePackage)
                     return package.Id.FamilyName + "!App";
         }
         catch (UnauthorizedAccessException)
         {
-            return "LocalDevelopment.OrielFolderDev_tvznpbczqragy!App";
+            return "OrielFolder.Desktop_zd9dpwnktq3x8!App";
         }
-        throw new InvalidOperationException("Please register OrielFolder Dev via start-dev.ps1 before launching it.");
+        throw new InvalidOperationException("Please install OrielFolder before launching it.");
     }
 
     public static bool EnsurePackageIdentity()
@@ -58,10 +58,10 @@ internal static class DevelopmentPackageActivation
     public static void ShowLaunchError(Exception error)
     {
         MessageBoxW(IntPtr.Zero,
-            "无法启动已注册的 OrielFolder Dev 开发版，程序已停止启动，避免设置只保存在内存中。\n" +
-            "请先运行 start-dev.ps1 注册并启动开发版。\n\n" +
-            "Cannot activate the registered OrielFolder Dev package. Error: 0x" + error.HResult.ToString("X8"),
-            "OrielFolder Dev", 0x10);
+            "无法启动已注册的 OrielFolder，程序已停止启动，避免设置只保存在内存中。\n" +
+            "请从开始菜单打开 OrielFolder，或重新运行 OrielFolder 安装程序。\n\n" +
+            "Cannot activate the registered OrielFolder package. Error: 0x" + error.HResult.ToString("X8"),
+            "OrielFolder", 0x10);
     }
 
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]

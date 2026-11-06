@@ -1,4 +1,4 @@
-param([switch]$SkipBuild)
+﻿param([switch]$SkipBuild)
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
 [xml]$sourceManifest = Get-Content -LiteralPath (Join-Path $root 'src\OrielFolder\OrielFolder\Package.appxmanifest')
@@ -53,7 +53,7 @@ foreach ($file in @('ListaryPluginManifest.json','Listary.FileAppPlugin.OrielFol
     Copy-Item -LiteralPath (Join-Path $root "src\OrielFolder\Listary.FileAppPlugin.OrielFolder\bin\Release\net48\$file") -Destination $adapter
 }
 @'
-OrielFolder 1.0.1 — 首次安装说明
+OrielFolder 1.0.2 — 首次安装说明
 
 支持 Windows 10 2004 或更新版本的 x64 电脑。普通双击运行，请勿使用其他管理员账户启动此向导。
 本软件是独立的开源文件管理器分支，不是原项目官方发行版。
@@ -72,10 +72,10 @@ Listary 6 是可选组件，不包含 Listary 本身。勾选集成后，如 Lis
 $compiler = Join-Path $tools 'InnoSetup\ISCC.exe'
 & $compiler "/DPayload=$payload" "/DOutput=$run" (Join-Path $root 'installer\OrielFolder.iss')
 if ($LASTEXITCODE) { throw 'EXE installer compilation failed.' }
-$installer = Join-Path $run 'OrielFolder-1.0.1-x64-Setup.exe'
+$installer = Join-Path $run 'OrielFolder-1.0.2-x64-Setup.exe'
 & (Join-Path $sdk 'signtool.exe') sign /fd SHA256 /sha1 $certificate.Thumbprint /s My $installer
 if ($LASTEXITCODE) { throw 'Installer signing failed.' }
-$sourceArchive = Join-Path $run 'OrielFolder-1.0.1-source.zip'
+$sourceArchive = Join-Path $run 'OrielFolder-1.0.2-source.zip'
 Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $zip = [IO.Compression.ZipFile]::Open($sourceArchive, [IO.Compression.ZipArchiveMode]::Create)

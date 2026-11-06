@@ -4,7 +4,7 @@
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <RootNamespace>OrielFolder</RootNamespace>
-    <AssemblyName>OrielFolderDev</AssemblyName>
+    <AssemblyName>OrielFolder</AssemblyName>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -27,9 +27,9 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <DefineConstants Condition="'$(OrielStandalone)' == 'true'">$(DefineConstants);ORIEL_STANDALONE</DefineConstants>
     <!-- Sentry release 정확도 — Package.appxmanifest와 동기화 필요 (수동) -->
-    <Version>1.0.1</Version>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.2</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -165,7 +165,7 @@
       <_ThumbsRid Condition="'$(Platform)' == 'ARM64'">win-arm64</_ThumbsRid>
       <_ThumbsBinDir>$(MSBuildThisFileDirectory)..\OrielFolder.Thumbs\bin\$(Platform)\$(Configuration)\net8.0-windows10.0.19041.0\$(_ThumbsRid)\</_ThumbsBinDir>
     </PropertyGroup>
-    <ItemGroup Condition="Exists('$(_ThumbsBinDir)OrielFolderDev.Thumbs.exe')">
+    <ItemGroup Condition="Exists('$(_ThumbsBinDir)OrielFolder.Thumbs.exe')">
       <!-- OrielFolder.Thumbs self-contained 전체를 'OrielFolder.Thumbs/' 서브디렉토리로 포함 (pdb 제외) -->
       <_ThumbsAllFiles Include="$(_ThumbsBinDir)**\*.*" Exclude="$(_ThumbsBinDir)**\*.pdb" />
       <Content Include="@(_ThumbsAllFiles)"
@@ -213,8 +213,8 @@
   </ItemGroup>
   <Target Name="IncludeDocumentPreviewWorker" AfterTargets="ResolveProjectReferences" BeforeTargets="GetCopyToOutputDirectoryItems;_GetPackageFiles">
     <ItemGroup>
-      <Content Include="$(MSBuildThisFileDirectory)..\OrielFolder.DocumentPreview.Worker\bin\$(Platform)\$(Configuration)\net48\OrielFolderDev.DocumentPreview.Worker.exe">
-        <Link>OrielFolderDev.DocumentPreview.Worker.exe</Link>
+      <Content Include="$(MSBuildThisFileDirectory)..\OrielFolder.DocumentPreview.Worker\bin\$(Platform)\$(Configuration)\net48\OrielFolder.DocumentPreview.Worker.exe">
+        <Link>OrielFolder.DocumentPreview.Worker.exe</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>

@@ -22,7 +22,7 @@ internal static class ArchiveEntryStaging
     /// <summary>Staged folders older than this are removed on the next call.</summary>
     private static readonly TimeSpan StagingLifetime = TimeSpan.FromHours(1);
 
-    private const string StagingPrefix = "OrielFolderDevArchive_";
+    private const string StagingPrefix = "OrielFolderArchive_";
 
     internal static bool ContainsArchiveEntry(IEnumerable<string>? paths)
         => paths is not null && paths.Any(ArchivePathHelper.IsArchivePath);
