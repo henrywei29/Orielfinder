@@ -88,6 +88,30 @@ Defined in `src/OrielFolder/OrielFolder/Helpers/AppIdentity.cs` and `Package.app
   `installer/Install-OrielFolder*.ps1`, `installer/Initialize-InstallerPowerShell.ps1`.
 - Standalone (unpackaged EXE) conversion via `-p:OrielStandalone=true` / `ORIEL_STANDALONE` is
   **partial and unfinished** (see rename-migration-status.md).
+- Dev uninstall: Settings → Advanced → "Uninstall OrielFolder Dev" (`Services/DevUninstall/*`,
+  `Views/SettingsModeView.DevUninstall.cs`, `Assets/DevUninstall/Uninstall-OrielFolderDev.ps1`). Visible only when
+  `Package.Current.Id.Name == "LocalDevelopment.OrielFolderDev"`.
+
+## MSIX virtualisation (affects any "change Windows" feature)
+
+- This packaged full-trust app's writes to **HKCU** and **`%LOCALAPPDATA%`** are redirected into the package
+  (`Packages\<family>\{SystemAppData,LocalCache,LocalState}`). Reads see real + virtual merged. Windows deletes the
+  package-private copies on uninstall — so the app's own registry/AppData writes never need manual cleanup, and the
+  app **cannot** change real-hive / real-AppData state from inside the container.
+- To change real system state, start an **elevated** process (`ProcessStartInfo { UseShellExecute = true, Verb = "runas" }`,
+  one UAC prompt): it runs outside the container. Existing users: `DefaultFileManagerService` (`regedit /s`),
+  `DevUninstallService` (PowerShell helper). An elevated helper must not trust paths from user-writable inputs —
+  derive allowed targets itself (see `Uninstall-OrielFolderDev.ps1 Get-ExpectedLayout`).
+- `D:\codex\...` and `Documents\...` are not virtualised.
+- **Agent shells can be inside a container too:** the Claude desktop app is MSIX-packaged, so Bash/PowerShell/dotnet
+  started from it read and write a *virtualised* HKCU and `%LOCALAPPDATA%` (e.g. `Packages\Claude_pzs8sxrjxfjjc\LocalCache\Local\...`).
+  A registry repair or "key is absent" check run there can be wrong for the real system (happened 2026-11-06). For real-state
+  checks start a process outside the container, e.g. `Invoke-CimMethod Win32_Process -MethodName Create` (read-only script,
+  output to `D:\codex`); real changes go through an elevated helper or the user.
+- MSIX has no uninstall hook: anything an app writes to the real system (e.g. the upstream SPAN Finder's
+  `HKCU\Software\Classes\{Folder,Directory,Drive}\shell\open\command` → `spanfinder.exe`) survives its uninstall and
+  breaks Explorer ("找不到应用程序"). Repair: `tools/Repair-StaleFolderOpen.ps1 -Apply -BackupDirectory D:\codex\...`
+  or the Dev uninstall option.
 
 ## Code comment language
 

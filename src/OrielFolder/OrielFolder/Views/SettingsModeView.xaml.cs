@@ -291,6 +291,8 @@ public sealed partial class SettingsModeView : UserControl
             DefaultFMRepairBtn.IsEnabled = Services.DefaultFileManagerService.CanChangeDefaultAssociations;
             ExportSetRegBtn.IsEnabled = Services.DefaultFileManagerService.CanChangeDefaultAssociations;
             ExportRestoreRegBtn.IsEnabled = Services.DefaultFileManagerService.CanChangeDefaultAssociations;
+            DevUninstallPanel.Visibility = Services.DevUninstall.DevUninstallService.IsAvailable
+                ? Visibility.Visible : Visibility.Collapsed;
             if (dfmService != null)
             {
                 DefaultFileManagerToggle.IsOn = dfmService.IsDefault();
@@ -871,6 +873,9 @@ public sealed partial class SettingsModeView : UserControl
             DefaultFMRepairLabel.Text = _loc.Get("Settings_DefaultFMRepair") ?? "폴더 연결 복구";
             DefaultFMRepairDesc.Text = _loc.Get("Settings_DefaultFMRepairDesc") ?? "이전 기본 파일 관리자 설정이 남긴 항목 때문에 일부 앱에서 폴더 열기가 실패할 수 있습니다. UAC 승인이 필요합니다.";
             DefaultFMRepairBtn.Content = _loc.Get("Settings_DefaultFMRepairButton") ?? "복구";
+            DevUninstallLabel.Text = _loc.Get("DevUninstall_Label");
+            DevUninstallDesc.Text = _loc.Get("DevUninstall_Desc");
+            DevUninstallBtn.Content = _loc.Get("DevUninstall_Button");
             DefaultFMExportLabel.Text = _loc.Get("Settings_DefaultFMExport") ?? ".reg 파일 수동 적용";
             DefaultFMExportDesc.Text = _loc.Get("Settings_DefaultFMExportDesc") ?? "자동 등록이 실패한 경우 .reg 파일을 내보내서 직접 실행하세요";
             ExportSetRegBtn.Content = _loc.Get("Settings_DefaultFMExportSet") ?? "등록";

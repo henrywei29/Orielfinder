@@ -84,6 +84,10 @@
     <Content Include="Assets\Onboarding\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!-- Dev uninstall helper (run elevated by DevUninstallService) -->
+    <Content Include="Assets\DevUninstall\Uninstall-OrielFolderDev.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- 라이선스 원문을 패키지에 동봉한다. 인앱 링크는 외부 GitHub로 나가므로

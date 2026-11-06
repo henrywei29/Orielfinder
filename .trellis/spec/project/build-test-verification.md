@@ -39,6 +39,11 @@ failure, not a test failure. PowerShell 7 was not installed on this machine as o
 
 ## Regression scripts `tests/test-*.ps1` (~78) and `tests/**/*.mjs`
 
+Known to run on Windows PowerShell 5.1 (no PowerShell 7 needed): `test-dev-uninstall-script.ps1`,
+`test-stale-folder-open.ps1`, `test-package-launch-arguments.ps1`, `test-two-column-shell-layout.ps1`.
+When a script dot-sources another script that has a `param()` block, do not reuse its parameter names
+(e.g. `$Plan`) as test variables: the dot-sourced `[string]` constraint silently converts your objects to strings.
+
 - The project's dominant test style: **static, fast PowerShell checks** that parse XAML/C# source
   (`[xml]` on `MainWindow.xaml`, regex on `.cs`) and compile pure classes with `Add-Type` (e.g.
   `Models/PaneLayoutGeometry.cs` in `test-pane-layout.ps1`). They print `PASS: ...` and `throw` on failure.

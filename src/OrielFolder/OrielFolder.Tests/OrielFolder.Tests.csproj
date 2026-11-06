@@ -74,6 +74,8 @@
     <Compile Include="..\OrielFolder\Services\Archive\OtterZipEngine.cs" Link="Sources\Services\Archive\OtterZipEngine.cs" />
     <Compile Include="..\OrielFolder\Services\Archive\ArchiveEntryStaging.cs" Link="Sources\Services\Archive\ArchiveEntryStaging.cs" />
     <Compile Include="..\OrielFolder\Services\ArchiveReaderService.cs" Link="Sources\Services\ArchiveReaderService.cs" />
+    <Compile Include="..\OrielFolder\Services\DevUninstall\StaleFolderOpenRule.cs" Link="Sources\Services\DevUninstall\StaleFolderOpenRule.cs" />
+    <Compile Include="..\OrielFolder\Services\DevUninstall\DevUninstallPlan.cs" Link="Sources\Services\DevUninstall\DevUninstallPlan.cs" />
     <Compile Include="..\OrielFolder\Helpers\ArchivePreviewResolver.cs" Link="Sources\Helpers\ArchivePreviewResolver.cs" />
     <Compile Include="..\OrielFolder\Helpers\FontScaleService.cs" Link="Sources\Helpers\FontScaleService.cs" />
     <!-- Services - file operations (pure C#) -->

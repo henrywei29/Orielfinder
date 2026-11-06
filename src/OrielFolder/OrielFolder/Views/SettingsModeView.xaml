@@ -1866,6 +1866,31 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Dev 전용: 시스템 흔적 정리 후 Dev 패키지 제거 (Package.Current가 Dev일 때만 표시) -->
+                            <Border x:Name="DevUninstallPanel" Style="{StaticResource SettingsCardBorder}" Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Style="{StaticResource CardIconContainer}">
+                                        <FontIcon Glyph="&#xE74D;" Style="{StaticResource CardIconStyle}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock x:Name="DevUninstallLabel" Text="卸载 OrielFolder Dev" Style="{StaticResource SettingsCardLabel}" />
+                                        <TextBlock x:Name="DevUninstallDesc" Text="先清理此开发版留在 Windows 中的内容（包括失效的“打开文件夹”设置），再移除应用。需要一次管理员批准（UAC）。" Style="{StaticResource SettingsCardDesc}" />
+                                    </StackPanel>
+                                    <Button x:Name="DevUninstallBtn" Grid.Column="2" Content="卸载" MinWidth="60"
+                                            VerticalAlignment="Center"
+                                            Background="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Foreground="White"
+                                            AutomationProperties.AutomationId="DevUninstallButton"
+                                            Click="OnDevUninstall"
+                                            helpers:CursorHelper.IsHandCursor="True"/>
+                                </Grid>
+                            </Border>
+
                         </StackPanel>
                     </ScrollViewer>
 
