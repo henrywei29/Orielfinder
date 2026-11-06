@@ -1,20 +1,20 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$modelPath = Join-Path $repo 'src\Span\Span\Models\WorkspacePaneState.cs'
+$modelPath = Join-Path $repo 'src\OrielFolder\OrielFolder\Models\WorkspacePaneState.cs'
 if (-not (Test-Path -LiteralPath $modelPath)) { throw 'Independent workspace panes are not implemented.' }
-$geometry = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\Models\PaneLayoutGeometry.cs'))
-$geometry = $geometry.Replace('namespace Span.Models;', 'namespace Span.Models {') + "`n}"
+$geometry = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\Models\PaneLayoutGeometry.cs'))
+$geometry = $geometry.Replace('namespace OrielFolder.Models;', 'namespace OrielFolder.Models {') + "`n}"
 $model = [IO.File]::ReadAllText($modelPath)
 $stubs = @'
-namespace Span.ViewModels { public class ExplorerViewModel {} }
-namespace Span.Models { public enum ViewMode { MillerColumns, Details, IconMedium, List, Home } }
+namespace OrielFolder.ViewModels { public class ExplorerViewModel {} }
+namespace OrielFolder.Models { public enum ViewMode { MillerColumns, Details, IconMedium, List, Home } }
 '@
 Add-Type -TypeDefinition ("#nullable enable`n" + $geometry + "`n" + $stubs + "`n" + $model)
-$first = [Span.Models.WorkspaceLayoutState]::new()
-$second = [Span.Models.WorkspaceLayoutState]::new()
-$a = $first.Add([Span.ViewModels.ExplorerViewModel]::new(), [Span.Models.ViewMode]::MillerColumns)
-$b = $first.Add([Span.ViewModels.ExplorerViewModel]::new(), [Span.Models.ViewMode]::Details)
-$c = $second.Add([Span.ViewModels.ExplorerViewModel]::new(), [Span.Models.ViewMode]::List)
+$first = [OrielFolder.Models.WorkspaceLayoutState]::new()
+$second = [OrielFolder.Models.WorkspaceLayoutState]::new()
+$a = $first.Add([OrielFolder.ViewModels.ExplorerViewModel]::new(), [OrielFolder.Models.ViewMode]::MillerColumns)
+$b = $first.Add([OrielFolder.ViewModels.ExplorerViewModel]::new(), [OrielFolder.Models.ViewMode]::Details)
+$c = $second.Add([OrielFolder.ViewModels.ExplorerViewModel]::new(), [OrielFolder.Models.ViewMode]::List)
 $first.Activate($a)
 if ($first.ActivePane -ne $a -or $second.ActivePane -ne $c) { throw 'Activating a pane leaked across tab groups.' }
 $first.MoveBefore($b, $a)
@@ -23,9 +23,9 @@ if (-not $first.Remove($a) -or $first.ActivePane -ne $b) { throw 'Closing the ac
 if ($first.Remove($b)) { throw 'Closing the final pane would discard the whole folder group.' }
 if ($second.Panes.Count -ne 1 -or $second.ActivePane -ne $c) { throw 'Closing a pane changed another tab group.' }
 Write-Output 'PASS: independent pane collections, selection, ordering and closing'
-$first.Layout = [Span.Models.PaneLayoutKind]::Floating
-$b.Bounds = [Span.Models.PaneBounds]::new(40, 50, 300, 220)
-$first.Layout = [Span.Models.PaneLayoutKind]::Tiled
-$first.Layout = [Span.Models.PaneLayoutKind]::Floating
+$first.Layout = [OrielFolder.Models.PaneLayoutKind]::Floating
+$b.Bounds = [OrielFolder.Models.PaneBounds]::new(40, 50, 300, 220)
+$first.Layout = [OrielFolder.Models.PaneLayoutKind]::Tiled
+$first.Layout = [OrielFolder.Models.PaneLayoutKind]::Floating
 if ($b.Bounds.X -ne 40 -or $first.Panes[0].Explorer -ne $b.Explorer) { throw 'Changing layout discarded folder or floating position.' }
 Write-Output 'PASS: layout changes retain folder identity and floating positions'

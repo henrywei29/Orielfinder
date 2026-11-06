@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\ViewModels\FolderViewModel.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\ViewModels\FolderViewModel.cs'))
 $method=[regex]::Match($source,'(?sm)^        private async Task ReadChildCountAsync\(.*?^        }').Value
 $driver=@'
 using System;

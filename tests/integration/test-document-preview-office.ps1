@@ -1,4 +1,4 @@
-param([string]$WorkerPath = (Join-Path $PSScriptRoot '..\..\src\Span\Span.DocumentPreview.Worker\bin\x64\Debug\net48\SpanDev.DocumentPreview.Worker.exe'))
+param([string]$WorkerPath = (Join-Path $PSScriptRoot '..\..\src\OrielFolder\OrielFolder.DocumentPreview.Worker\bin\x64\Debug\net48\OrielFolder.DocumentPreview.Worker.exe'))
 $ErrorActionPreference = 'Stop'
 $fixtureRoot = Join-Path 'D:\codex\Orielfolder-development\document-preview-office-tests' ([guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $fixtureRoot -Force | Out-Null

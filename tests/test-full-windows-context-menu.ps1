@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Services\ContextMenuService.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Services\ContextMenuService.cs'))
 $method = [regex]::Match($source, '(?sm)^        private void AppendFullWindowsContextMenu\(.*?^        }').Value
 if (-not $method) { throw 'FAIL: ordinary local item menus have no deferred full Windows context-menu entry.' }
 $header = @'
@@ -23,8 +23,8 @@ namespace Microsoft.UI.Xaml.Controls {
         public void Hide() { Closed?.Invoke(this, EventArgs.Empty); }
     }
 }
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string text){} } }
-namespace Span.Services {
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string text){} } }
+namespace OrielFolder.Services {
     public class Loc { public string Get(string key) => key; }
     public static class ShellContextMenu {
         public static int Calls; public static IntPtr Owner; public static string Path=""; public static int X,Y;
@@ -72,4 +72,4 @@ $driver = @'
 }
 '@
 Add-Type -TypeDefinition ($header + $method + $driver)
-[Span.Services.FullMenuTests]::Run().GetAwaiter().GetResult()
+[OrielFolder.Services.FullMenuTests]::Run().GetAwaiter().GetResult()

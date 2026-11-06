@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.Columns.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.Columns.cs'))
 $method=[regex]::Match($source,'(?sm)^    private void OnHeaderLayoutUpdated.*?(?=^    private void )').Value
 $stub=@'
 #nullable enable annotations

@@ -15,5 +15,5 @@ $output = 'D:\codex\Orielfolder-development\ListaryHostLoadTest.exe'
     ('/reference:' + (Join-Path $directory 'Microsoft.Extensions.Logging.Abstractions.dll')) `
     (Join-Path $PSScriptRoot 'integration\ListaryHostLoadTest.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Official-host test compilation failed.' }
-& $output (Join-Path $repo 'src\Span\Listary.FileAppPlugin.SpanDev\bin\Debug\net48') $directory
+& $output (Join-Path $repo 'src\OrielFolder\Listary.FileAppPlugin.OrielFolder\bin\Debug\net48') $directory
 if ($LASTEXITCODE -ne 0) { throw 'Installed Listary host rejected the plugin.' }

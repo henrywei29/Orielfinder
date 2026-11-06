@@ -13,7 +13,7 @@ internal static class ListaryDialogTest
         Application.EnableVisualStyles();
         using (var owner = new Form())
         {
-            owner.Text = "SPAN Dev - Listary Test";
+            owner.Text = "OrielFolder - Listary Test";
             owner.Width = 1000;
             owner.Height = 720;
             owner.StartPosition = FormStartPosition.CenterScreen;
@@ -21,7 +21,7 @@ internal static class ListaryDialogTest
             {
                 using (var dialog = new SaveFileDialog())
                 {
-                    dialog.Title = "SPAN Dev - Listary Save Dialog Test";
+                    dialog.Title = "OrielFolder - Listary Save Dialog Test";
                     dialog.InitialDirectory = directory;
                     dialog.FileName = "Listary-save-check.txt";
                     dialog.Filter = "Text files (*.txt)|*.txt";

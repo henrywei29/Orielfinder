@@ -26,12 +26,12 @@ internal static class ListaryHostLoadTest
     {
         var host = FileAppPluginHostBase.LoadPluginFrom<ReadOnlyHost>(directory, () => new ReadOnlyHost())
             .GetAwaiter().GetResult();
-        if (host == null || host.Plugin == null || host.Manifest.Id != "SpanDev")
+        if (host == null || host.Plugin == null || host.Manifest.Id != "OrielFolder")
         {
-            Console.WriteLine("FAIL: Installed Listary host could not discover and initialize the SPAN Dev plugin.");
+            Console.WriteLine("FAIL: Installed Listary host could not discover and initialize the OrielFolder plugin.");
             return 1;
         }
-        Console.WriteLine("PASS: Installed Listary host discovers the plugin/window/tab classes and initializes SPAN Dev under .NET Framework.");
+        Console.WriteLine("PASS: Installed Listary host discovers the plugin/window/tab classes and initializes OrielFolder under .NET Framework.");
         return 0;
     }
 

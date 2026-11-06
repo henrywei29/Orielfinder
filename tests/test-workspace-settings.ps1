@@ -1,8 +1,8 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$settings = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\Services\SettingsService.cs'))
-$settings = $settings.Replace('namespace Span.Services;', 'namespace Span.Services {') + "`n}"
-$translations = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\Services\LocalizationData.cs'))
+$settings = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\Services\SettingsService.cs'))
+$settings = $settings.Replace('namespace OrielFolder.Services;', 'namespace OrielFolder.Services {') + "`n}"
+$translations = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\Services\LocalizationData.cs'))
 $collaborators = @'
 namespace Windows.Storage {
     public class ApplicationDataContainer {
@@ -13,8 +13,8 @@ namespace Windows.Storage {
         public ApplicationDataContainer LocalSettings { get; } = new();
     }
 }
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
-namespace Span.Services {
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
+namespace OrielFolder.Services {
     public interface ISettingsService {}
     public partial class LocalizationService {
         public static void VerifyWorkspaceTranslations() {
@@ -53,14 +53,14 @@ namespace Span.Services {
     }
 }
 '@
-$viewModes = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\Models\ViewMode.cs'))
+$viewModes = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\Models\ViewMode.cs'))
 Add-Type -TypeDefinition ("#nullable enable annotations`n#nullable disable warnings`n" + $settings + "`n" + $translations + "`n" + $collaborators + "`n" + $viewModes)
-[Span.Services.WorkspaceSettingsProbe]::Verify()
+[OrielFolder.Services.WorkspaceSettingsProbe]::Verify()
 Write-Output 'PASS: production settings defaults, persistence and change notifications'
-[Span.Services.LocalizationService]::VerifyWorkspaceTranslations()
+[OrielFolder.Services.LocalizationService]::VerifyWorkspaceTranslations()
 Write-Output 'PASS: nine workspace labels each have nine nonempty translations and unique keys'
 
-$xaml = [xml][IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\Views\SettingsModeView.xaml'))
+$xaml = [xml][IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\Views\SettingsModeView.xaml'))
 $names = [Xml.XmlNamespaceManager]::new($xaml.NameTable)
 $names.AddNamespace('x', 'http://schemas.microsoft.com/winfx/2006/xaml')
 $combo = $xaml.SelectSingleNode('//*[@x:Name="GeneralSection"]//*[@x:Name="MultiPaneLayoutCombo"]', $names)

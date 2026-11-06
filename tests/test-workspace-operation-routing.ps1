@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$operations = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\ViewModels\MainViewModel.FileOperations.cs'))
-$drag = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\MainWindow.DragDropHandler.cs'))
+$operations = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\ViewModels\MainViewModel.FileOperations.cs'))
+$drag = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\MainWindow.DragDropHandler.cs'))
 function Get-Method([string]$source, [string]$signature) {
     $start = $source.IndexOf($signature, [StringComparison]::Ordinal)
     if ($start -lt 0) { throw "Missing method: $signature" }

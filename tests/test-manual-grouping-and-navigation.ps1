@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $failures = [System.Collections.Generic.List[string]]::new()
 $main = Get-Content "$root\MainWindow.xaml.cs" -Raw
 $details = Get-Content "$root\Views\DetailsModeView.xaml.cs" -Raw

@@ -1,13 +1,13 @@
 $ErrorActionPreference='Stop'
-$root=Join-Path $PSScriptRoot '..\src\Span\Span'
+$root=Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $source=Get-Content "$root\MainWindow.PaneSizing.cs" -Raw
-$source=$source.Substring($source.IndexOf('namespace Span'))
+$source=$source.Substring($source.IndexOf('namespace OrielFolder'))
 $fixture=@'
 #nullable enable annotations
 using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
-using Span.Models;
+using OrielFolder.Models;
 namespace Microsoft.UI.Input { public enum InputSystemCursorShape {SizeWestEast} }
 namespace Microsoft.UI.Xaml {
  public enum GridUnitType {Pixel,Star}
@@ -22,13 +22,13 @@ namespace Microsoft.UI.Xaml.Input {
  public class PointerPoint {public Point Position=new();public Properties Properties=new();}
  public class PointerRoutedEventArgs {public Pointer Pointer=new();public PointerPoint Point=new();public bool Handled;public PointerPoint GetCurrentPoint(object e)=>Point;}
 }
-namespace Span.Models {
+namespace OrielFolder.Models {
  public class TabItem {public double SplitRatio=.5;}
  public enum ViewMode {MillerColumns,Settings,ActionLog,RecycleBin}
  public static class PaneLayoutGeometry {public static double ClampSplitRatio(double width,double ratio){double min=Math.Min(150/width,.5);return Math.Clamp(ratio,min,1-min);}}
 }
-namespace Span.Helpers {public static class CursorHelper {public static void SetCursor(object e,Microsoft.UI.Input.InputSystemCursorShape c){}}}
-namespace Span {
+namespace OrielFolder.Helpers {public static class CursorHelper {public static void SetCursor(object e,Microsoft.UI.Input.InputSystemCursorShape c){}}}
+namespace OrielFolder {
  public class Model {public bool IsSplitViewEnabled=true;public ViewMode CurrentViewMode;public TabItem ActiveTab=new();}
  public sealed partial class MainWindow {
   Model ViewModel=new();Element ClassicPaneHost=new(){ActualWidth=1001},LeftPaneCol=new(){ActualWidth=500},RightPaneCol=new(){ActualWidth=500},SplitterCol=new(),PaneDivider=new();
@@ -51,5 +51,5 @@ namespace Span {
 }
 '@
 Add-Type -TypeDefinition ($fixture+$source) -WarningAction SilentlyContinue
-[Span.MainWindow]::Run()
+[OrielFolder.MainWindow]::Run()
 'PASS: production drag handlers resize both panes, clamp minimum width, stop on capture loss, protect other tabs and remove single-pane gap.'

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path (Split-Path $PSScriptRoot -Parent) 'src\Span\Span'
+$root = Join-Path (Split-Path $PSScriptRoot -Parent) 'src\OrielFolder\OrielFolder'
 $folderSource = [IO.File]::ReadAllText((Join-Path $root 'ViewModels\FolderViewModel.cs'))
 $widthSource = [IO.File]::ReadAllText((Join-Path $root 'MainWindow.DragDropHandler.cs'))
 $load = [regex]::Match($folderSource, '(?sm)^        public async Task EnsureChildrenLoadedAsync\(\).*?^        }').Value
@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string message) {} }
     public static class ArchivePathHelper { public static bool IsArchivePath(string path) => path == "archive"; }
     public static class UncPathHelper {
@@ -21,7 +21,7 @@ namespace Span.Helpers {
         public static bool IsServerRoot(string path) => path == "server";
     }
 }
-namespace Span.Services {
+namespace OrielFolder.Services {
     public class SettingsService { public bool ShowHiddenFiles = true; }
     public static class FileSystemRouter { public static bool IsRemotePath(string path) => path == "remote"; }
     public class FolderContentCache {
@@ -34,7 +34,7 @@ namespace Span.Services {
         }
     }
 }
-namespace Span {
+namespace OrielFolder {
     public class App {
         public static App Current = new();
         public ServiceProvider Services = new();
@@ -44,8 +44,8 @@ namespace Span {
         public object? GetService(Type type) => type == typeof(Services.SettingsService) ? new Services.SettingsService() : Cache;
     }
 }
-namespace Span.ViewModels {
-    using Span.Services;
+namespace OrielFolder.ViewModels {
+    using OrielFolder.Services;
     public class FileSystemViewModel { public string DisplayName = "short"; }
     public partial class FolderViewModel : FileSystemViewModel {
         public class Model { public string Path = "local"; public bool HasChildEntries = true; }
@@ -71,8 +71,8 @@ namespace Span.ViewModels {
 $hostSource = @'
     }
 }
-namespace Span {
-    using Span.ViewModels;
+namespace OrielFolder {
+    using OrielFolder.ViewModels;
     public partial class MainWindow {
         public int Measurements;
         public double Measure(FolderViewModel folder) => MeasureColumnContentWidth(folder);
@@ -82,10 +82,10 @@ Add-Type -TypeDefinition ($stubs + $load + $hostSource + $width + "`n} }")
 
 $failures = [Collections.Generic.List[string]]::new()
 $uiReturned = [Threading.ManualResetEventSlim]::new($false)
-$cache = [Span.App]::Current.Services.Cache
-$cache.Value = [Span.Services.FolderContentCache+CachedFolder]::new()
+$cache = [OrielFolder.App]::Current.Services.Cache
+$cache.Value = [OrielFolder.Services.FolderContentCache+CachedFolder]::new()
 $cache.Release.Reset()
-$vm = [Span.ViewModels.FolderViewModel]::new()
+$vm = [OrielFolder.ViewModels.FolderViewModel]::new()
 # A small C# thread driver avoids PowerShell runspace behavior in the simulated UI thread.
 # Reflection lets the driver call the separately compiled production-method harness.
 $driverSource = @'
@@ -118,12 +118,12 @@ else { 'PASS: slow cache freshness I/O yields the calling UI thread' }
 if ($vm.Route -ne 'cache' -or $vm.Populates -ne 1 -or -not $cache.Hidden -or $vm.IsLoading) { throw 'Cache hit or hidden-file behavior changed.' }
 'PASS: cache hit populates once and preserves hidden-file settings/loading state'
 
-[Span.App]::Current.Services.Cache = [Span.Services.FolderContentCache]::new()
-$cache = [Span.App]::Current.Services.Cache
-$cache.Value = [Span.Services.FolderContentCache+CachedFolder]::new()
+[OrielFolder.App]::Current.Services.Cache = [OrielFolder.Services.FolderContentCache]::new()
+$cache = [OrielFolder.App]::Current.Services.Cache
+$cache.Value = [OrielFolder.Services.FolderContentCache+CachedFolder]::new()
 $cache.Release.Reset()
 $uiReturned.Reset()
-$vm = [Span.ViewModels.FolderViewModel]::new()
+$vm = [OrielFolder.ViewModels.FolderViewModel]::new()
 $thread = [Driver]::Start($vm, $uiReturned)
 if (-not $cache.Entered.Wait(2000)) { throw 'Cancellation test did not enter freshness check.' }
 $vm._cts.Cancel()
@@ -133,8 +133,8 @@ if ([Driver]::Error -or $vm.Populates -ne 0 -or $null -ne $vm._cts) { throw 'Can
 'PASS: cancelling slow metadata I/O prevents stale population and releases token'
 
 foreach ($route in @('local', 'archive', 'remote', 'wsl', 'server')) {
-    [Span.App]::Current.Services.Cache = [Span.Services.FolderContentCache]::new()
-    $vm = [Span.ViewModels.FolderViewModel]::new()
+    [OrielFolder.App]::Current.Services.Cache = [OrielFolder.Services.FolderContentCache]::new()
+    $vm = [OrielFolder.ViewModels.FolderViewModel]::new()
     $vm._folderModel.Path = $route
     $null = $vm.EnsureChildrenLoadedAsync().GetAwaiter().GetResult()
     $null = $vm.EnsureChildrenLoadedAsync().GetAwaiter().GetResult()
@@ -142,12 +142,12 @@ foreach ($route in @('local', 'archive', 'remote', 'wsl', 'server')) {
     "PASS: $route load routing and already-loaded short circuit"
 }
 
-$folder = [Span.ViewModels.FolderViewModel]::new()
-$long = [Span.ViewModels.FileSystemViewModel]::new()
+$folder = [OrielFolder.ViewModels.FolderViewModel]::new()
+$long = [OrielFolder.ViewModels.FileSystemViewModel]::new()
 $long.DisplayName = 'x' * 100
 $folder.Children.Add($long)
-for ($i=0; $i -lt 9999; $i++) { $folder.Children.Add([Span.ViewModels.FileSystemViewModel]::new()) }
-$window = [Span.MainWindow]::new()
+for ($i=0; $i -lt 9999; $i++) { $folder.Children.Add([OrielFolder.ViewModels.FileSystemViewModel]::new()) }
+$window = [OrielFolder.MainWindow]::new()
 $result = $window.Measure($folder)
 "MEASURE: 10000 items, width=$result, text measurements=$($window.Measurements)"
 if ($result -ne 600) { throw 'Maximum width changed.' }
@@ -155,11 +155,11 @@ if ($window.Measurements -ne 1) { $failures.Add('Text measurement continued afte
 else { 'PASS: saturated width avoids 9999 unnecessary UI text measurements' }
 
 $folder.Children.Clear()
-$folder.Children.Add([Span.ViewModels.FileSystemViewModel]::new())
-$childFolder = [Span.ViewModels.FolderViewModel]::new()
+$folder.Children.Add([OrielFolder.ViewModels.FileSystemViewModel]::new())
+$childFolder = [OrielFolder.ViewModels.FolderViewModel]::new()
 $childFolder.DisplayName = 'folder-name'
 $folder.Children.Add($childFolder)
-$window = [Span.MainWindow]::new()
+$window = [OrielFolder.MainWindow]::new()
 if ($window.Measure($folder) -ne 185 -or $window.Measurements -ne 2) { throw 'Exact small-folder width or folder badges changed.' }
 'PASS: exact unsaturated width includes folder badge/chevron'
 $folder.Children.Clear()

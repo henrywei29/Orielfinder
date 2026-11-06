@@ -1,13 +1,13 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.KeyboardHandler.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.KeyboardHandler.cs'))
 $method = [regex]::Match($source, '(?sm)^        private (?:async )?void HandleShellContextMenu\(.*?^        }').Value
 if (-not $method) { throw 'FAIL: keyboard native context-menu handler is missing.' }
 $header = @'
 #nullable enable
 using System;
 using System.Threading.Tasks;
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string text){} } }
-namespace Span.Services {
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string text){} } }
+namespace OrielFolder.Services {
  public static class ShellContextMenu {
   public static int SyncCalls,AsyncCalls;public static IntPtr Owner;public static string Path="";
   public static TaskCompletionSource<bool> Pending=new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -15,7 +15,7 @@ namespace Span.Services {
   public static Task<bool> ShowForItemAsync(IntPtr owner,string path){AsyncCalls++;Owner=owner;Path=path;return Pending.Task;}
  }
 }
-namespace Span {
+namespace OrielFolder {
  public class SelectedItem { public string? Path; }
  public class Explorer { public string? CurrentPath; }
  public class ViewModelState { public Explorer? ActiveExplorer; }
@@ -46,4 +46,4 @@ $driver = @'
 }
 '@
 Add-Type -TypeDefinition ($header+$method+$driver)
-[Span.MainWindow]::Run()
+[OrielFolder.MainWindow]::Run()

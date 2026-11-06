@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.KeyboardHandler.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.KeyboardHandler.cs'))
 $method = [regex]::Match($source, '(?sm)^        private void SetQuickLookSiblings\(.*?^        }').Value
 if (-not $method) { throw 'Preview sibling resolver not found.' }
 $driver = @'

@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
-$source = Get-Content (Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.FolderTags.cs') -Raw
+$ErrorActionPreference = 'Stop'
+$source = Get-Content (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.FolderTags.cs') -Raw
 $method = [regex]::Match($source, '(?sm)^    private async Task ApplyToolbarFolderTagAsync\(FolderTagColor color\).*?^    }').Value
 if (!$method) { throw 'Toolbar tag action is missing.' }
 $fixture = @'

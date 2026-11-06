@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.FileOperationHandler.cs'))
-$navigation = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.NavigationManager.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.FileOperationHandler.cs'))
+$navigation = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.NavigationManager.cs'))
 function Read-Method([string]$text, [string]$name) {
     [regex]::Match($text, '(?sm)^        private [^\r\n]+ ' + $name + '\([^\r\n]*\).*?^        }').Value
 }
@@ -14,12 +14,12 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Span.ViewModels;
-namespace Span.Helpers {
+using OrielFolder.ViewModels;
+namespace OrielFolder.Helpers {
     public static class ArchivePathHelper { public static bool IsArchivePath(string path) => false; }
     public static class DebugLogger { public static void Log(string text) {} }
 }
-namespace Span.Services {
+namespace OrielFolder.Services {
     public class FileSystemRouter { public static bool IsRemotePath(string path) => false; }
     namespace FileOperations {
         public class NewFolderOperation {
@@ -28,7 +28,7 @@ namespace Span.Services {
         }
     }
 }
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public class FileSystemViewModel {
         public string Path = "";
         public string Name => System.IO.Path.GetFileName(Path);
@@ -51,7 +51,7 @@ namespace Span.ViewModels {
         private class Scope : IDisposable { public void Dispose() {} }
     }
 }
-namespace Span {
+namespace OrielFolder {
     public enum ViewMode { MillerColumns, Details, List, IconMedium }
     public enum ActivePane { Left, Right }
     public class App {
@@ -183,12 +183,12 @@ foreach ($scenario in @('left pane toolbar','right pane toolbar','focused select
     'active parent overrides stale right focus','active file selection overrides stale right focus',
     'active child overrides stale parent focus',
     'ancestor file keeps expanded child','no active or selection','details selected unopened folder','right details')) {
-    try { [Span.MainWindow]::Check($fixture, $scenario); "PASS: $scenario" }
+    try { [OrielFolder.MainWindow]::Check($fixture, $scenario); "PASS: $scenario" }
     catch { $failures += $_.Exception.InnerException.Message }
 }
 foreach ($changeFocus in @($false,$true)) {
   foreach ($staleFocus in @($false,$true)) {
-    try { [Span.MainWindow]::CheckCreation((Join-Path $fixture "create-$changeFocus-$staleFocus"), $changeFocus, $staleFocus); "PASS: real directory creation, switch focus=$changeFocus, stale right focus=$staleFocus" }
+    try { [OrielFolder.MainWindow]::CheckCreation((Join-Path $fixture "create-$changeFocus-$staleFocus"), $changeFocus, $staleFocus); "PASS: real directory creation, switch focus=$changeFocus, stale right focus=$staleFocus" }
     catch { $failures += $_.Exception.InnerException.Message }
   }
 }

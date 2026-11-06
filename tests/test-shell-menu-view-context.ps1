@@ -8,7 +8,7 @@ $targets = @(
 $failures = @()
 $checked = 0
 foreach ($target in $targets) {
-    $path = Join-Path $PSScriptRoot ("..\src\Span\Span\" + $target)
+    $path = Join-Path $PSScriptRoot ("..\src\OrielFolder\OrielFolder\" + $target)
     $source = [IO.File]::ReadAllText($path)
     $calls = [regex]::Matches($source, '(?m)^\s*.*?await (?:ContextMenuService|_contextMenuService)\.Build(?<kind>File|Folder|EmptyArea)MenuAsync\((?<target>\w+),[^\r\n]*')
     if (-not $calls.Count) { throw "FAIL: no item/background menu paths were found in $target" }

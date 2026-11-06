@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
-$program = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\src\Span\Span\Program.cs') -Raw
-$program = $program.Replace('namespace Span;', 'namespace Span {') + "`n}"
+$program = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Program.cs') -Raw
+$program = $program.Replace('namespace OrielFolder;', 'namespace OrielFolder {') + "`n}"
 $stubs = @'
 namespace WinRT { public static class ComWrappersSupport { public static void InitializeComWrappers() {} } }
 namespace Microsoft.Windows.AppLifecycle {
@@ -23,11 +23,11 @@ namespace Microsoft.UI.Dispatching {
         public DispatcherQueueSynchronizationContext(DispatcherQueue queue) {}
     }
 }
-namespace Span {
+namespace OrielFolder {
     public class App { public static int Constructions; public App() { Constructions++; } }
 }
-namespace Span.Helpers {
-    public static class AppIdentity { public const string SingleInstanceKey = "SPAN_DEV_MAIN"; }
+namespace OrielFolder.Helpers {
+    public static class AppIdentity { public const string SingleInstanceKey = "ORIEL_FOLDER_DEV_MAIN"; }
     public static class DevelopmentPackageActivation {
         public static string Mode = "packaged";
         public static int Activations;
@@ -41,20 +41,20 @@ namespace Span.Helpers {
 }
 '@
 Add-Type -TypeDefinition ($program + $stubs)
-$entry = [Span.App].Assembly.GetType('Span.Program').GetMethod('Main', [Reflection.BindingFlags]'Static,NonPublic')
+$entry = [OrielFolder.App].Assembly.GetType('OrielFolder.Program').GetMethod('Main', [Reflection.BindingFlags]'Static,NonPublic')
 foreach ($mode in @('unpackaged','failed','packaged')) {
-    [Span.Helpers.DevelopmentPackageActivation]::Mode = $mode
-    [Span.Helpers.DevelopmentPackageActivation]::Activations = 0
-    [Span.App]::Constructions = 0
+    [OrielFolder.Helpers.DevelopmentPackageActivation]::Mode = $mode
+    [OrielFolder.Helpers.DevelopmentPackageActivation]::Activations = 0
+    [OrielFolder.App]::Constructions = 0
     [Microsoft.Windows.AppLifecycle.AppInstance]::Registrations = 0
     $exitCode = $entry.Invoke($null, (, [string[]]@()))
     if ($mode -eq 'packaged') {
-        if ([Span.App]::Constructions -ne 1 -or $exitCode -ne 0) { throw 'Packaged startup must construct the app normally.' }
+        if ([OrielFolder.App]::Constructions -ne 1 -or $exitCode -ne 0) { throw 'Packaged startup must construct the app normally.' }
     } else {
-        if ([Span.App]::Constructions -ne 0 -or [Microsoft.Windows.AppLifecycle.AppInstance]::Registrations -ne 0) {
+        if ([OrielFolder.App]::Constructions -ne 0 -or [Microsoft.Windows.AppLifecycle.AppInstance]::Registrations -ne 0) {
             throw "$mode startup reached the settings/UI and single-instance registration without package identity."
         }
-        if ($mode -eq 'unpackaged' -and [Span.Helpers.DevelopmentPackageActivation]::Activations -ne 1) { throw 'Direct launch was not redirected.' }
+        if ($mode -eq 'unpackaged' -and [OrielFolder.Helpers.DevelopmentPackageActivation]::Activations -ne 1) { throw 'Direct launch was not redirected.' }
         if ($mode -eq 'failed' -and $exitCode -ne 1) { throw 'Activation failure must be reported.' }
     }
     "PASS: $mode startup"

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$views = Join-Path $PSScriptRoot '..\src\Span\Span\Views'
+$views = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views'
 $failures = [Collections.Generic.List[string]]::new()
 foreach($case in @(@('DetailsModeView','DetailsListView','OnDetailsKeyDown','OnDetailsPreviewKeyDown'), @('IconModeView','IconGridView','OnIconKeyDown','OnIconPreviewKeyDown'), @('ListModeView','ListGridView','OnListKeyDown','OnListPreviewKeyDown'))) {
     $name,$hostName,$handlerName,$previewName=$case

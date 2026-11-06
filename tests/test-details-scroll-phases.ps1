@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = Get-Content (Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.xaml.cs') -Raw
+$source = Get-Content (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.xaml.cs') -Raw
 $method = [regex]::Match($source, '(?sm)^        private void OnContainerContentChanging\(.*?^        }').Value
 if (-not $method) { throw 'Cannot locate production container callback.' }
 $fixture = @'

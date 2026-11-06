@@ -8,7 +8,7 @@ $extra=foreach($name in @('BuildNewItemMenu','PopulateShellNewItems','QueueShell
     $match=[regex]::Match($source,'(?sm)^        (?:private|public) (?:void|MenuFlyout) '+$name+'\(.*?^        }')
     if($match.Success){$match.Value}elseif($name -ne 'QueueShellNewItemsAfterOpened'){throw "Missing $name"}
 }
-$registry=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Services\ShellNewService.cs'))
+$registry=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Services\ShellNewService.cs'))
 $getCache=[regex]::Match($registry,'(?sm)^    public List<ShellNewItem> GetShellNewItems\(.*?^    }').Value
 $invalidate=[regex]::Match($registry,'(?m)^    public void InvalidateCache\(\) =>.*').Value
 if(-not $invalidate){$invalidate=[regex]::Match($registry,'(?sm)^    public void InvalidateCache\(.*?^    }').Value}
@@ -56,9 +56,9 @@ $driver=@'
         }
     }
 }
-namespace Span.Helpers { public static class ArchivePathHelper { public static bool IsArchivePath(string path)=>false; } }
+namespace OrielFolder.Helpers { public static class ArchivePathHelper { public static bool IsArchivePath(string path)=>false; } }
 namespace Microsoft.UI.Xaml.Media { public class FontFamily { public FontFamily(string path){} } }
 '@
 Add-Type -TypeDefinition ($header+($methods -join "`n")+$inside+($extra -join "`n")+$outside+$getCache+$invalidate+$driver)
-$results=[Span.Services.NewTypeTests]::Run().GetAwaiter().GetResult();$results
+$results=[OrielFolder.Services.NewTypeTests]::Run().GetAwaiter().GetResult();$results
 if(@($results|Where-Object {$_ -like 'FAIL:*'}).Count){throw 'ShellNew responsiveness regressions failed.'}

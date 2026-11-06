@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Services\ContextMenuService.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Services\ContextMenuService.cs'))
 $method = [regex]::Match($source, '(?sm)^        public async Task RebuildMenuWithShellExtensionsAsync\(.*?^        }').Value
 if (-not $method) { throw 'FAIL: manual shell-extension menu rebuild is missing.' }
 $header = @'
@@ -31,7 +31,7 @@ namespace Microsoft.UI.Xaml.Controls {
   }
  }
 }
-namespace Span.Services {
+namespace OrielFolder.Services {
  public class FileSystemViewModel {} public class FileViewModel:FileSystemViewModel {} public class FolderViewModel:FileSystemViewModel {}
  public interface IContextMenuHost {} public class Host:IContextMenuHost {}
  public class ContextMenuService {
@@ -62,4 +62,4 @@ $driver = @'
 }
 '@
 Add-Type -TypeDefinition ($header+$method+$driver)
-[Span.Services.ContextMenuService]::Run().GetAwaiter().GetResult()
+[OrielFolder.Services.ContextMenuService]::Run().GetAwaiter().GetResult()

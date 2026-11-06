@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\WorkspaceFolderPane.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\WorkspaceFolderPane.cs'))
 $method = [regex]::Match($source, '(?sm)^        private (?:static )?Brush\? ResourceBrush\(string key\).*?(?=^        private void AddMode)').Value
 if (-not $method) { throw 'Pane brush resolver not found.' }
 $probe = @'

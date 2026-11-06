@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$root=Join-Path $PSScriptRoot '..\src\Span\Span'
+$root=Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $shell=[IO.File]::ReadAllText((Join-Path $root 'Services\ShellContextMenu.cs'))
 $methods=foreach($signature in @('public void Dispose','private void DisposeCore','internal void DisposeOnSta')) {
     $match=[regex]::Match($shell,'(?sm)^            '+[regex]::Escape($signature)+'\(.*?^            }')
@@ -16,12 +16,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string text) {} }
-    public static class ViewModeExtensions { public static bool IsIconMode(Span.ViewMode mode)=>false; }
+    public static class ViewModeExtensions { public static bool IsIconMode(OrielFolder.ViewMode mode)=>false; }
 }
 namespace Microsoft.UI.Dispatching { public enum DispatcherQueuePriority { Low } }
-namespace Span {
+namespace OrielFolder {
     public static class Marshal { public static int ReleaseComObject(object value)=>0; }
     public class Session {
         private readonly object _lock=new();
@@ -92,6 +92,6 @@ $driver=@'
 }
 '@
 Add-Type -TypeDefinition ($prefix+($methods -join "`n")+$hostSource+$newTab+$driver)
-$results=[Span.PerfTests]::Run().GetAwaiter().GetResult()
+$results=[OrielFolder.PerfTests]::Run().GetAwaiter().GetResult()
 $results
 if(@($results|Where-Object {$_ -like 'FAIL:*'}).Count){throw 'Tab/menu performance regressions failed.'}

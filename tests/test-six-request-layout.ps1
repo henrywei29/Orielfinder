@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$root=Join-Path $PSScriptRoot '..\src\Span\Span'
+$root=Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 foreach($file in @('MainWindow.xaml','Views\DetailsModeView.xaml','Views\ListModeView.xaml','Views\IconModeView.xaml')){
  $s=Get-Content (Join-Path $root $file) -Raw
  [xml]$xml=$s

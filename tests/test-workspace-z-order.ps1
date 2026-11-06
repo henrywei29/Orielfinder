@@ -1,6 +1,6 @@
 param([switch] $ReproduceOldZOrder, [switch] $ReproduceOldGroupDetach)
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.WorkspaceLayout.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.WorkspaceLayout.cs'))
 if ($ReproduceOldZOrder) {
     $source = [regex]::Replace($source, 'Canvas\.SetZIndex\(divider, [^)]+\);', 'Canvas.SetZIndex(divider, int.MaxValue);')
     $source = [regex]::Replace($source, '(?s)var ordered = _workspaceViews\.Values.*?Canvas\.SetZIndex\(ordered\[i\], i\);',
@@ -21,7 +21,7 @@ $hostSource = @'
 using System;
 using System.Collections.Generic;
 using System.Linq;
-namespace Span {
+namespace OrielFolder {
     public enum PaneLayoutKind { Tiled, Floating }
     public enum Visibility { Visible, Collapsed }
     public class Explorer {}
@@ -123,14 +123,14 @@ Add-Type -TypeDefinition ($hostSource + "`n" + ($constants -join "`n") + "`n" + 
 $failures = @()
 foreach ($orientation in @($true, $false)) {
     try {
-        $window = [Span.MainWindow]::new()
+        $window = [OrielFolder.MainWindow]::new()
         $z = $window.AddDivider($orientation)
         if ($z -lt 3 -or $z -gt 1000000) { throw 'Divider must be above pane layers and within the WinUI range.' }
         Write-Output "PASS: divider creation respects native ZIndex range (vertical=$orientation)"
     } catch { $failures += "Divider creation failed (vertical=$orientation): $($_.Exception.Message)" }
 }
 try {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $window.SeedNearLimit()
     $hidden = $window.AddHiddenCachedPane()
     $window.Activate(1)
@@ -150,12 +150,12 @@ try {
     Write-Output 'PASS: floating activation normalizes existing layers and remains bounded after 600 activations'
 } catch { $failures += "Floating activation failed: $($_.Exception.Message)" }
 try {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $groupA = $window.Group
     $paneA = $groupA.Panes[0]
     $viewA = $window.ViewFor($paneA)
-    $groupB = [Span.WorkspaceLayoutState]::new()
-    $paneB = [Span.WorkspacePaneState]::new()
+    $groupB = [OrielFolder.WorkspaceLayoutState]::new()
+    $paneB = [OrielFolder.WorkspacePaneState]::new()
     $groupB.Panes.Add($paneB)
     $window.SyncGroup($groupB)
     $viewB = $window.ViewFor($paneB)

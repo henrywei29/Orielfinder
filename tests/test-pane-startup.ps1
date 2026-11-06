@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.PaneSizing.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.PaneSizing.cs'))
 $property=[regex]::Match($source,'(?sm)^        private bool IsClassicSplitVisible =>.*?;').Value
 $stub=@'
 public enum ViewMode {Home,Settings,ActionLog,RecycleBin}

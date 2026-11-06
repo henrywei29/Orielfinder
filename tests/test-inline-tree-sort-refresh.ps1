@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.InlineTree.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.InlineTree.cs'))
 $method = [regex]::Match($source, '(?sm)^    private void OnTreeExplorerChanged\(.*?(?=^    private void OnInlineTreeChanged)').Value
 if (-not $method) { throw 'Tree refresh handler not found.' }
 $driver = @'

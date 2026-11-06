@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $header = @'
 #nullable enable
 #nullable disable warnings
@@ -9,8 +9,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Span.Models;
-using Span.Services;
+using OrielFolder.Models;
+using OrielFolder.Services;
 using Windows.Storage;
 namespace Windows.Storage {
     public class ApplicationDataContainer { public Dictionary<string,object?> Values { get; } = new(); }
@@ -19,7 +19,7 @@ namespace Windows.Storage {
         public ApplicationDataContainer LocalSettings { get; } = new();
     }
 }
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string message) {} } }
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string message) {} } }
 '@
 $sources = foreach ($file in @('Services\ISettingsService.cs', 'Services\SettingsService.cs',
     'Services\PreviewLabelPresets.cs', 'Services\PreviewToolbarOrder.cs', 'Services\ConfigurationBackupService.cs', 'Services\LocalizationData.cs',

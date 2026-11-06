@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$source = Get-Content (Join-Path $repo 'src/Span/Span/Views/SettingsModeView.xaml.cs') -Raw
+$source = Get-Content (Join-Path $repo 'src/OrielFolder/OrielFolder/Views/SettingsModeView.xaml.cs') -Raw
 $signature = 'private void UpdateHeartAnimation()'
 $start = $source.IndexOf($signature)
 if ($start -ge 0) {

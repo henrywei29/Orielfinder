@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.SettingsHandler.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.SettingsHandler.cs'))
 $themeCase = [regex]::Match($source, '(?s)case "Theme":.*?break;').Value
 if (!$themeCase) { throw 'Cannot locate actual theme setting handler.' }
 $harness = @'

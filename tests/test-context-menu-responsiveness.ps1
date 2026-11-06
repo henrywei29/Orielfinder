@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Services\ContextMenuService.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Services\ContextMenuService.cs'))
 $methods=foreach($name in @('AppendShellExtensionItemsAsync','AppendBackgroundShellExtensionItemsAsync','AppendShellExtensionItemsCoreAsync','OnMenuClosed','QueueShellExtensionsAfterOpened','TryInvokeInItems')) {
     $match=[regex]::Match($source,'(?sm)^        private (?:async )?(?:Task|void|bool) '+$name+'\(.*?^        }')
     if($match.Success){$match.Value}elseif($name -ne 'QueueShellExtensionsAfterOpened'){throw "Missing method $name"}
@@ -39,16 +39,16 @@ namespace Microsoft.UI.Xaml.Controls {
         public void Close()=>Closed?.Invoke(this,EventArgs.Empty);public void Hide()=>Close();
     }
 }
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string text){} }
     public static class DispatcherHelper { public static void SafeEnqueue(Microsoft.UI.Xaml.Controls.Queue queue,Action action)=>action(); }
     public static class NativeMethods { public static void keybd_event(byte key,byte scan,uint flags,uint extra){} }
 }
-namespace Span {
+namespace OrielFolder {
     public class App { public static App Current=new();public Provider Services=new(); }
     public class Provider { public T? GetService<T>() where T:class=>null; }
 }
-namespace Span.Services {
+namespace OrielFolder.Services {
     public class CrashReportingService { public void CaptureException(Exception ex,string context){} }
     public class Settings { public bool ShowShellExtensions=true; }
     public class Loc { public string Get(string key)=>key; }
@@ -138,5 +138,5 @@ $driver=@'
 }
 '@
 Add-Type -TypeDefinition ($header+($methods -join "`n")+$driver)
-$results=[Span.Services.MenuTests]::Run().GetAwaiter().GetResult();$results
+$results=[OrielFolder.Services.MenuTests]::Run().GetAwaiter().GetResult();$results
 if(@($results|Where-Object {$_ -like 'FAIL:*'}).Count){throw 'Context menu responsiveness regressions failed.'}

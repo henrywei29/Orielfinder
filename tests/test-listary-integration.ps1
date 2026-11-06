@@ -1,12 +1,12 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path -Parent $PSScriptRoot
-$files = @('src\Span\Span\Helpers\ListaryFolderPath.cs', 'src\Span\Span\Services\ListaryWindowBridge.cs',
-    'src\Span\Listary.FileAppPlugin.SpanDev\SpanDevPlugin.cs')
+$files = @('src\OrielFolder\OrielFolder\Helpers\ListaryFolderPath.cs', 'src\OrielFolder\OrielFolder\Services\ListaryWindowBridge.cs',
+    'src\OrielFolder\Listary.FileAppPlugin.OrielFolder\OrielFolderPlugin.cs')
 foreach ($file in $files) {
     if (-not (Test-Path -LiteralPath (Join-Path $repo $file))) { throw 'Listary directory-provider integration is not implemented.' }
 }
 $sources = $files | ForEach-Object { [IO.File]::ReadAllText((Join-Path $repo $_)) }
-$integration = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\MainWindow.ListaryIntegration.cs'))
+$integration = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\MainWindow.ListaryIntegration.cs'))
 $pathMethod = [regex]::Match($integration, '(?sm)^        private string GetListaryFolderPath\(\).*?^        }').Value
 if (-not $pathMethod) { throw 'Cannot find the active-pane Listary path resolver.' }
 $stubs = @'
@@ -29,7 +29,7 @@ namespace Listary.FileAppPlugin {
 }
 '@
 $mainWindowHost = @'
-namespace Span {
+namespace OrielFolder {
     public enum ViewMode { MillerColumns, Details, List, IconSmall, IconMedium, IconLarge, IconExtraLarge, Home, Settings, ActionLog, RecycleBin }
     public enum ActivePane { Left, Right }
     public class Folder { public string Path = @"D:\temporary\Child"; }
@@ -47,9 +47,9 @@ namespace Span {
 $mainWindowEnd = @'
     }
 }
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class ViewModeExtensions {
-        public static bool IsIconMode(Span.ViewMode mode) => mode >= Span.ViewMode.IconSmall && mode <= Span.ViewMode.IconExtraLarge;
+        public static bool IsIconMode(OrielFolder.ViewMode mode) => mode >= OrielFolder.ViewMode.IconSmall && mode <= OrielFolder.ViewMode.IconExtraLarge;
     }
 }
 '@
@@ -58,12 +58,12 @@ using System;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
-using Span.Helpers;
-using Span.Services;
-using Listary.FileAppPlugin.SpanDev;
+using OrielFolder.Helpers;
+using OrielFolder.Services;
+using Listary.FileAppPlugin.OrielFolder;
 public static class ListaryChecks {
     private static string ReadPath(IntPtr window) {
-        var tab = new SpanDevWindow(window).GetCurrentTab().GetAwaiter().GetResult();
+        var tab = new OrielFolderWindow(window).GetCurrentTab().GetAwaiter().GetResult();
         return ((Listary.FileAppPlugin.IGetFolder)tab).GetCurrentFolder().GetAwaiter().GetResult();
     }
     [DllImport("user32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
@@ -88,7 +88,7 @@ public static class ListaryChecks {
                 if (ReadPath(window) != activePath) throw new Exception("Provider did not recover after leaving a special page.");
             }
             if (ReadPath(window) != "") throw new Exception("Disposed bridge still returns a directory.");
-            var plugin = new SpanDevPlugin();
+            var plugin = new OrielFolderPlugin();
             if (plugin.BindFileWindow(window) != null) throw new Exception("Plugin bound an unrelated process.");
             if (plugin.BindFileWindow(IntPtr.Zero) != null) throw new Exception("Plugin bound an invalid window.");
             if (!plugin.IsOpenedFolderProvider || plugin.IsQuickSwitchTarget || plugin.IsSharedAcrossApplications)
@@ -141,20 +141,20 @@ foreach ($case in @(
 'PASS: bridge disposal, unrelated windows and directory-provider-only role remain safe'
 [ListaryChecks]::BusyWindowTimeout()
 'PASS: busy target window returns no path within a bounded timeout'
-$window = [Span.MainWindow]::new()
+$window = [OrielFolder.MainWindow]::new()
 foreach($mode in @('MillerColumns','Details','List','IconSmall','IconMedium','IconLarge','IconExtraLarge','Home','Settings','ActionLog','RecycleBin')) {
-    $window.ViewModel.CurrentViewMode = [Span.ViewMode]::$mode
+    $window.ViewModel.CurrentViewMode = [OrielFolder.ViewMode]::$mode
     $expected = if($mode -in @('Home','Settings','ActionLog','RecycleBin')) { '' } else { 'D:\temporary\Child' }
     if($window.ReadPath() -ne $expected) { throw "Wrong Listary directory for view mode $mode" }
 }
 'PASS: special pages never expose an old directory; folder views provide the resolved active target'
 $window.ViewModel.IsSplitViewEnabled = $true
-$window.ViewModel.ActivePane = [Span.ActivePane]::Right
-$window.ViewModel.CurrentViewMode = [Span.ViewMode]::Home
-$window.ViewModel.RightViewMode = [Span.ViewMode]::Details
+$window.ViewModel.ActivePane = [OrielFolder.ActivePane]::Right
+$window.ViewModel.CurrentViewMode = [OrielFolder.ViewMode]::Home
+$window.ViewModel.RightViewMode = [OrielFolder.ViewMode]::Details
 if($window.ReadPath() -ne 'D:\temporary\Child') { throw 'Right-side folder was hidden by left-side Home.' }
-$window.ViewModel.CurrentViewMode = [Span.ViewMode]::Details
-$window.ViewModel.RightViewMode = [Span.ViewMode]::Home
+$window.ViewModel.CurrentViewMode = [OrielFolder.ViewMode]::Details
+$window.ViewModel.RightViewMode = [OrielFolder.ViewMode]::Home
 if($window.ReadPath() -ne '') { throw 'Right-side Home exposed a stale left-side folder.' }
 $window._isClosed = $true
 if($window.ReadPath() -ne '') { throw 'Closed window exposed its previous path.' }

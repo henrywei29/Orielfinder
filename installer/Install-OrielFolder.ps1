@@ -1,7 +1,8 @@
 ﻿param([switch]$DesktopShortcut)
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName System.Windows.Forms
 try {
+    . "$PSScriptRoot\Initialize-InstallerPowerShell.ps1"
+    Add-Type -AssemblyName System.Windows.Forms
     $packagePath = Join-Path $PSScriptRoot 'OrielFolder.msix'
     $certificatePath = Join-Path $PSScriptRoot 'OrielFolder.cer'
     $certificate = New-Object Security.Cryptography.X509Certificates.X509Certificate2 $certificatePath
@@ -51,6 +52,10 @@ try {
     }
     exit 0
 } catch {
-    [Windows.Forms.MessageBox]::Show(('安装未完成。现有其他应用不会被卸载。' + [Environment]::NewLine + $_.Exception.Message),'OrielFolder','OK','Error') | Out-Null
+    $failure = '安装未完成。现有其他应用不会被卸载。' + [Environment]::NewLine +
+        "Windows PowerShell $($PSVersionTable.PSVersion), $([IntPtr]::Size * 8)-bit; $($_.FullyQualifiedErrorId)" +
+        [Environment]::NewLine + $_.Exception.ToString()
+    try { [Windows.Forms.MessageBox]::Show($failure,'OrielFolder','OK','Error') | Out-Null }
+    catch { [Console]::Error.WriteLine($failure) }
     exit 1
 }

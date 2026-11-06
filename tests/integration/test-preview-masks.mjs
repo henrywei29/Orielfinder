@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const require = createRequire(path.join(process.env.SPAN_RUNTIME_PACKAGE_ROOT, 'package.json'));
 const { chromium } = require('playwright');
-const assets = fileURLToPath(new URL('../../src/Span/Span/Assets/PdfViewer/', import.meta.url));
+const assets = fileURLToPath(new URL('../../src/OrielFolder/OrielFolder/Assets/PdfViewer/', import.meta.url));
 const output = process.env.SPAN_MASK_RESULTS || 'D:/codex/Orielfolder-development/preview-mask-tests';
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch({ headless: true, channel: 'msedge' });

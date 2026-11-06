@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $main = Get-Content "$root\MainWindow.xaml.cs" -Raw
 if ($main -match 'GetOrCreateIndicator|ApplyPathIndicators|OnPathHighlightsUpdated') { throw 'Floating file path marker is still created or scheduled.' }
 $xaml = [xml](Get-Content "$root\MainWindow.xaml" -Raw)

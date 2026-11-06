@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = Get-Content (Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.xaml.cs') -Raw
+$source = Get-Content (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.xaml.cs') -Raw
 $methods = @('SaveSortSettings','RestoreSortSettings') | ForEach-Object {
     $m = [regex]::Match($source, "(?sm)^        private void $_\(\).*?^        }").Value
     if (!$m) { throw "Missing production method $_" }

@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=Get-Content (Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.NavigationManager.cs') -Raw
+$source=Get-Content (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.NavigationManager.cs') -Raw
 $method=[regex]::Match($source,'(?sm)^        private int GetCurrentColumnIndex\(\).*?^        }').Value
 $driver=@'
 using System;

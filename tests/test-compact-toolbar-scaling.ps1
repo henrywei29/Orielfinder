@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.SettingsHandler.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.SettingsHandler.cs'))
 $method=[regex]::Match($source,'(?sm)^        private void ApplyIconFontScaleToGlobalUI\(.*?^        }').Value
 if (-not $method) { throw 'Toolbar scaling method not found' }
 $driver=@'

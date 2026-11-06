@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Helpers\InlineTreeViewHelper.cs'))
-$source=[regex]::Replace($source,'(?m)^using .*;\r?\n','') -replace 'namespace Span.Helpers;', 'namespace Span.Helpers {'
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Helpers\InlineTreeViewHelper.cs'))
+$source=[regex]::Replace($source,'(?m)^using .*;\r?\n','') -replace 'namespace OrielFolder.Helpers;', 'namespace OrielFolder.Helpers {'
 $stubs=@'
 using System;
 using System.Collections.Generic;
@@ -42,18 +42,18 @@ public class StripeScrollProbe {
  public static string Run(){
   var root=new FrameworkElement{ActualTheme=ElementTheme.Light};var xaml=new XamlRoot{Content=root};root.XamlRoot=xaml;
   var light=new SolidColorBrush(null);var dark=new SolidColorBrush(null);
-  root.Resources.ThemeDictionaries["Light"]=new ResourceDictionary{{"SpanBgLayer2Brush",light}};
-  root.Resources.ThemeDictionaries["Dark"]=new ResourceDictionary{{"SpanBgLayer2Brush",dark}};
+  root.Resources.ThemeDictionaries["Light"]=new ResourceDictionary{{"OrielFolderBgLayer2Brush",light}};
+  root.Resources.ThemeDictionaries["Dark"]=new ResourceDictionary{{"OrielFolderBgLayer2Brush",dark}};
   var row=new SelectorItem();var list=new ListViewBase{XamlRoot=xaml};
-  for(int i=0;i<10000;i++)Span.Helpers.InlineTreeViewHelper.ApplyStripe(list,row,1);
+  for(int i=0;i<10000;i++)OrielFolder.Helpers.InlineTreeViewHelper.ApplyStripe(list,row,1);
   if(Windows.UI.ViewManagement.AccessibilitySettings.Reads>1)throw new Exception("10000 row callbacks performed "+Windows.UI.ViewManagement.AccessibilitySettings.Reads+" system contrast reads");
   if(row.Writes!=1)throw new Exception("Unchanged stripe invalidated row "+row.Writes+" times");
   if(!ReferenceEquals(row.Background,light))throw new Exception("Light stripe missing");
   var panel=new Panel();panel.Children.Add(new SelectorItem());panel.Children.Add(row);list.ItemsPanelRoot=panel;
-  root.ActualTheme=ElementTheme.Dark;Span.Helpers.InlineTreeViewHelper.RefreshStripes(list);
+  root.ActualTheme=ElementTheme.Dark;OrielFolder.Helpers.InlineTreeViewHelper.RefreshStripes(list);
   if(!ReferenceEquals(row.Background,dark))throw new Exception("Cached palette was not refreshed for dark theme");
   Windows.UI.ViewManagement.AccessibilitySettings.Contrast=true;root.VisualChildren.Add(list);
-  Span.Helpers.InlineTreeViewHelper.RefreshStripeTree(root);
+  OrielFolder.Helpers.InlineTreeViewHelper.RefreshStripeTree(root);
   if(ReferenceEquals(row.Background,dark))throw new Exception("Contrast refresh retained colored stripes");
   return "PASS: 10000 row callbacks use one system lookup/one unchanged background write; theme/contrast refresh preserved";
  }

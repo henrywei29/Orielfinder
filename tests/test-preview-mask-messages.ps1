@@ -1,10 +1,10 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DocumentPreviewView.Interactions.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DocumentPreviewView.Interactions.cs'))
 $method = [regex]::Match($source, '(?sm)^    private bool TryReadAnnotations\(.*?^    }').Value
 if (!$method) { throw 'Cannot locate production preview message validator.' }
 $copy = [regex]::Match($source, '(?sm)^    private List<PreviewAnnotation> GetAnnotations\(.*?^        }\)\.ToList\(\);').Value
 if (!$copy) { throw 'Cannot locate production annotation snapshot method.' }
-$models = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Models\PreviewAnnotation.cs'))
+$models = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Models\PreviewAnnotation.cs'))
 $models = $models.Substring($models.IndexOf('public sealed class'))
 $hostSource = @'
 using System;
@@ -12,8 +12,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
-using Span.Models;
-namespace Span.Models {
+using OrielFolder.Models;
+namespace OrielFolder.Models {
 '@
 $hostSource += $models + "`n}`n"
 $hostSource += @'

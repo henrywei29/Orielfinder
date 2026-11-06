@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$root=Join-Path $PSScriptRoot '..\src\Span\Span'
+$root=Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $source=Get-Content "$root\MainWindow.SettingsHandler.cs" -Raw
 $method=[regex]::Match($source,'(?sm)private void OpenSettingsTab\(\).*?^        }').Value
 if($method -notmatch 'SettingsWindow.Show' -or $method -match 'OpenOrSwitchToSettingsTab'){throw 'Settings still navigates the browsing tab'}

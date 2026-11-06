@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Services\ShellContextMenu.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Services\ShellContextMenu.cs'))
 $struct = [regex]::Match($source, '(?sm)^        \[StructLayout\(LayoutKind.Sequential\)\]\r?\n        private struct CMINVOKECOMMANDINFO\r?\n.*?^        }').Value
 $constants = [regex]::Matches($source, '(?m)^        private const (?:uint|int) (?:CMIC_MASK_\w+|FIRST_CMD|SW_SHOWNORMAL) = .*?;') | ForEach-Object Value
 $initializers = [regex]::Matches($source, '(?s)var invokeInfo = new CMINVOKECOMMANDINFO\s*\{.*?\};')

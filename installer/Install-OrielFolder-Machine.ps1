@@ -1,6 +1,5 @@
 ﻿param([switch]$InstallListary)
 $ErrorActionPreference = 'Stop'
-Add-Type -AssemblyName System.Windows.Forms
 function Assert-NoLinks([string]$Path) {
     $current = [IO.Path]::GetFullPath($Path)
     while ($current) {
@@ -13,6 +12,8 @@ function Assert-NoLinks([string]$Path) {
     }
 }
 try {
+    . "$PSScriptRoot\Initialize-InstallerPowerShell.ps1"
+    Add-Type -AssemblyName System.Windows.Forms
     $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
     if (!(New-Object Security.Principal.WindowsPrincipal $identity).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { throw 'Administrator permission is required.' }
     $certificatePath = Join-Path $PSScriptRoot 'OrielFolder.cer'
@@ -88,6 +89,9 @@ try {
     @{ Restart=($restart -and [bool]$ListaryDirectory); Executable=$(if ($ListaryDirectory) { Join-Path $ListaryDirectory 'Listary.exe' } else { '' }) } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $PSScriptRoot 'integration.json') -Encoding UTF8
     exit 0
 } catch {
-    [Windows.Forms.MessageBox]::Show($_.Exception.Message,'OrielFolder setup','OK','Error') | Out-Null
+    $failure = "Windows PowerShell $($PSVersionTable.PSVersion), $([IntPtr]::Size * 8)-bit; $($_.FullyQualifiedErrorId)" +
+        [Environment]::NewLine + $_.Exception.ToString()
+    try { [Windows.Forms.MessageBox]::Show($failure,'OrielFolder setup','OK','Error') | Out-Null }
+    catch { [Console]::Error.WriteLine($failure) }
     exit 1
 }

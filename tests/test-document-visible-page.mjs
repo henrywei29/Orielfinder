@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
-const source = readFileSync(new URL('../src/Span/Span/Assets/PdfViewer/preview.mjs', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../src/OrielFolder/OrielFolder/Assets/PdfViewer/preview.mjs', import.meta.url), 'utf8');
 const body = source.match(/function updateVisible\(\) \{([\s\S]*?)\n\}\nfunction setZoom/)[1];
 function currentPage(top, height) {
   const pages = { scrollTop: top, clientHeight: height };

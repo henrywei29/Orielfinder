@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$xaml = [xml][IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.xaml'))
+$xaml = [xml][IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.xaml'))
 $refresh = $xaml.SelectSingleNode("//*[local-name()='Button' and @AutomationProperties.AutomationId='Button_Refresh']")
 $cut = $xaml.SelectSingleNode("//*[local-name()='Button' and @AutomationProperties.AutomationId='Button_Cut']")
 if (-not $refresh -or -not [object]::ReferenceEquals($refresh.ParentNode, $cut.ParentNode)) {
@@ -16,10 +16,10 @@ if ($refresh.GetAttribute('IsEnabled') -notmatch 'IsFolderRefreshEnabled\(ViewMo
 }
 Write-Output 'PASS: refresh is beside Cut/Copy and remains available in split view'
 
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.FileOperationHandler.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.FileOperationHandler.cs'))
 $handler = [regex]::Match($source, '(?s)        private async void HandleRefresh\(\).*?(?=\r?\n        #endregion)')
 if (-not $handler.Success) { throw 'Cannot locate the production refresh handler.' }
-$splitSource = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.SplitPreviewManager.cs'))
+$splitSource = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.SplitPreviewManager.cs'))
 $enabledMethod = [regex]::Match($splitSource, '(?s)        public bool IsFolderRefreshEnabled\(.*?\r?\n        \}')
 if (-not $enabledMethod.Success) { throw 'Cannot locate the active-pane refresh availability method.' }
 
@@ -30,16 +30,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Span.Models;
-using Span.ViewModels;
-namespace Span.Models {
+using OrielFolder.Models;
+using OrielFolder.ViewModels;
+namespace OrielFolder.Models {
     public enum ViewMode { MillerColumns, Details, Home, Settings, ActionLog, RecycleBin }
     public enum ActivePane { Left, Right }
 }
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string message) {} }
 }
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public class FileItem { public string Name = "test.txt"; }
     public class FolderViewModel {
         public List<FileItem> Children = new();
@@ -59,7 +59,7 @@ namespace Span.ViewModels {
         public ExplorerViewModel ActiveExplorer = new();
     }
 }
-namespace Span {
+namespace OrielFolder {
     public class MainWindow {
         public MainViewModel ViewModel = new();
         public int FocusedColumn = -1;
@@ -68,7 +68,7 @@ namespace Span {
 '@
 Add-Type -TypeDefinition ($hostSource + "`n" + $handler.Value + "`n" + $enabledMethod.Value + "`n    }`n}")
 
-$window = [Span.MainWindow]::new()
+$window = [OrielFolder.MainWindow]::new()
 foreach ($case in @(
     @{ Split = $true; Pane = 'Right'; Left = 'Home'; Right = 'MillerColumns'; Expected = $true },
     @{ Split = $true; Pane = 'Left'; Left = 'Home'; Right = 'MillerColumns'; Expected = $false },
@@ -79,8 +79,8 @@ foreach ($case in @(
     @{ Split = $false; Pane = 'Left'; Left = 'ActionLog'; Right = 'Details'; Expected = $false },
     @{ Split = $false; Pane = 'Left'; Left = 'RecycleBin'; Right = 'Details'; Expected = $false }
 )) {
-    $actual = $window.IsFolderRefreshEnabled($case.Split, [Span.Models.ActivePane]::$($case.Pane),
-        [Span.Models.ViewMode]::$($case.Left), [Span.Models.ViewMode]::$($case.Right))
+    $actual = $window.IsFolderRefreshEnabled($case.Split, [OrielFolder.Models.ActivePane]::$($case.Pane),
+        [OrielFolder.Models.ViewMode]::$($case.Left), [OrielFolder.Models.ViewMode]::$($case.Right))
     if ($actual -ne $case.Expected) { throw "Wrong refresh availability: $($case | ConvertTo-Json -Compress)" }
     Write-Output "PASS: refresh availability split=$($case.Split) pane=$($case.Pane) left=$($case.Left) right=$($case.Right)"
 }
@@ -92,18 +92,18 @@ foreach ($case in @(
     @{ Name = 'Right active pane uses its own view mode and directory'; Mode = 'Details'; Focus = -1; Target = 0; Split = $true },
     @{ Name = 'Right Miller pane refreshes its focused column'; Mode = 'MillerColumns'; Focus = 1; Target = 1; Split = $true }
 )) {
-    $window = [Span.MainWindow]::new()
-    $window.ViewModel.CurrentViewMode = [Span.Models.ViewMode]::MillerColumns
+    $window = [OrielFolder.MainWindow]::new()
+    $window.ViewModel.CurrentViewMode = [OrielFolder.Models.ViewMode]::MillerColumns
     if ($case.Split) {
         $window.ViewModel.IsSplitViewEnabled = $true
-        $window.ViewModel.ActivePane = [Span.Models.ActivePane]::Right
-        $window.ViewModel.RightViewMode = [Span.Models.ViewMode]::$($case.Mode)
-    } else { $window.ViewModel.CurrentViewMode = [Span.Models.ViewMode]::$($case.Mode) }
+        $window.ViewModel.ActivePane = [OrielFolder.Models.ActivePane]::Right
+        $window.ViewModel.RightViewMode = [OrielFolder.Models.ViewMode]::$($case.Mode)
+    } else { $window.ViewModel.CurrentViewMode = [OrielFolder.Models.ViewMode]::$($case.Mode) }
     $explorer = $window.ViewModel.ActiveExplorer
-    1..3 | ForEach-Object { $explorer.Columns.Add([Span.ViewModels.FolderViewModel]::new()) }
+    1..3 | ForEach-Object { $explorer.Columns.Add([OrielFolder.ViewModels.FolderViewModel]::new()) }
     $explorer.CurrentFolder = $explorer.Columns[0]
     $window.FocusedColumn = $case.Focus
-    $selected = [Span.ViewModels.FileItem]::new()
+    $selected = [OrielFolder.ViewModels.FileItem]::new()
     $target = $explorer.Columns[$case.Target]
     $target.Children.Add($selected)
     $target.SelectedChild = $selected

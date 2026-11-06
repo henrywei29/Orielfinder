@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
 $xml=[Xml.XmlDocument]::new()
-$xml.Load((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.xaml'))
+$xml.Load((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.xaml'))
 $ns=[Xml.XmlNamespaceManager]::new($xml.NameTable)
 $ns.AddNamespace('x','http://schemas.microsoft.com/winfx/2006/xaml')
 function Named($name){$xml.SelectSingleNode("//*[@x:Name='$name']",$ns)}

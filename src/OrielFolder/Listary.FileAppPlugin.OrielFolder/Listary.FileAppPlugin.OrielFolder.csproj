@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>Listary.FileAppPlugin.OrielFolderDev</AssemblyName>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Listary.FileAppPlugin" Version="1.0.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+    <Compile Include="..\OrielFolder\Helpers\ListaryFolderPath.cs" Link="ListaryFolderPath.cs" />
+    <None Update="ListaryPluginManifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\OrielFolder\Assets\Square44x44Logo.targetsize-48_altform-unplated.png" Link="Icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

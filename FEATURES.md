@@ -245,9 +245,9 @@
 
 ## 드래그 & 드롭
 
-- **내부**: Span 내 파일 이동/복사 (Ctrl=복사, Shift=이동)
-- **외부 → Span**: Windows Explorer, Desktop, 기타 앱에서 파일 드롭
-- **Span → 외부**: Windows Explorer, Desktop으로 파일 드래그
+- **내부**: OrielFolder 내 파일 이동/복사 (Ctrl=복사, Shift=이동)
+- **외부 → OrielFolder**: Windows Explorer, Desktop, 기타 앱에서 파일 드롭
+- **OrielFolder → 외부**: Windows Explorer, Desktop으로 파일 드래그
 - **커서 피드백**: 드래그 중 복사/이동/금지 커서 아이콘 실시간 표시
 - **즐겨찾기 드롭**: 사이드바에 파일 드롭으로 즐겨찾기 추가
 - **분할 뷰 간 드래그**: 좌↔우 패널 간 파일 이동/복사

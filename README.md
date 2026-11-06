@@ -15,7 +15,7 @@ Orielfolder 是面向 Windows 10/11 的现代桌面文件管理器开源仓库�
 | Path | Description |
 | :--- | :--- |
 | [`dist/`](dist/) | Prebuilt Windows x64 setup installer (`OrielFolder-1.0.1-x64-Setup.exe`) and installation notes (`install-notice.txt`) / 预构建 Windows x64 安装程序与安装说明 |
-| [`src/`](src/) | Solution source code (`Span` main app, `Span.Thumbs` worker, `Span.DocumentPreview.Worker`, `Listary.FileAppPlugin.SpanDev`, `Span.Tests`, `Span.UITests`) / 核心源码与测试工程 |
+| [`src/`](src/) | Solution source code (`OrielFolder` main app, `OrielFolder.Thumbs` worker, `OrielFolder.DocumentPreview.Worker`, `Listary.FileAppPlugin.OrielFolder`, `OrielFolder.Tests`, `OrielFolder.UITests`) / 核心源码与测试工程 |
 | [`installer/`](installer/) | Inno Setup script (`OrielFolder.iss`) and PowerShell setup helpers (`Install-OrielFolder.ps1`, `Install-OrielFolder-Machine.ps1`) / 安装向导配置与脚本 |
 | [`tests/`](tests/) | Integration, UI layout, preview, and regression verification scripts / 集成测试与回归验证脚本 |
 | [`third_party/`](third_party/) | Vendored native archive engine (`otterzip_ffi.dll`) and integrity checks / 原生压缩包引擎组件 |

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $main = Get-Content "$root\MainWindow.xaml.cs" -Raw
 if ($main -match 'SetTitleBar\(AppTitleBar\)') { throw 'XAML still owns automatic title-bar regions; candidate has not switched to explicit geometry.' }
 $source = Get-Content "$root\MainWindow.TabManager.cs" -Raw

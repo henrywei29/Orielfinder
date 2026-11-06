@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$view = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DocumentPreviewView.cs'))
+$view = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DocumentPreviewView.cs'))
 $methods = foreach ($name in @('UpdatePreparationProgress', 'HideNativeLoading')) {
     $method = [regex]::Match($view, '(?sm)^    private void ' + $name + '\(.*?^    }').Value
     if (-not $method) { throw "Missing actual native loading method: $name" }

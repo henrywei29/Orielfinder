@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $sources = @{
-    Routing = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.WorkspaceRouting.cs'))
-    Settings = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.SettingsHandler.cs'))
+    Routing = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.WorkspaceRouting.cs'))
+    Settings = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.SettingsHandler.cs'))
 }
 $methods = foreach ($entry in @(
     @('Routing', 'QueueWorkspaceColumnLayout'),
@@ -19,9 +19,9 @@ $hostSource = @'
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Span.Models;
-using Span.ViewModels;
-using Span.Views;
+using OrielFolder.Models;
+using OrielFolder.ViewModels;
+using OrielFolder.Views;
 namespace Microsoft.UI.Dispatching {
     public enum DispatcherQueuePriority { Low }
     public class DispatcherQueue {
@@ -30,15 +30,15 @@ namespace Microsoft.UI.Dispatching {
         public void Flush() { while (Pending.Count > 0) Pending.Dequeue()(); }
     }
 }
-namespace Span.ViewModels { public class ExplorerViewModel { public bool IsReplacingLastColumn; } }
-namespace Span.Models { public class WorkspacePaneState { public ExplorerViewModel Explorer = new(); } }
-namespace Span.Views {
+namespace OrielFolder.ViewModels { public class ExplorerViewModel { public bool IsReplacingLastColumn; } }
+namespace OrielFolder.Models { public class WorkspacePaneState { public ExplorerViewModel Explorer = new(); } }
+namespace OrielFolder.Views {
     public class WorkspaceFolderPane {
-        public Span.ItemsControl MillerItems = new();
-        public Span.ScrollViewer MillerScroller = new();
+        public OrielFolder.ItemsControl MillerItems = new();
+        public OrielFolder.ScrollViewer MillerScroller = new();
     }
 }
-namespace Span {
+namespace OrielFolder {
     public enum ListViewSelectionMode { Extended, Multiple }
     public class ListView { public ListViewSelectionMode SelectionMode; }
     public class Border { public double Width; }
@@ -81,7 +81,7 @@ Add-Type -TypeDefinition ($hostSource + "`n" + ($methods -join "`n") + "`n    }`
 
 $failures = @()
 foreach ($case in @('enable', 'disable', 'loaded', 'add', 'replace', 'cancelled replacement')) {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $window.SetCheckboxes($true)
     switch ($case) {
         'disable' { $window.SetCheckboxes($false) }

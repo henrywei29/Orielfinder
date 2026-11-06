@@ -1,4 +1,4 @@
-param([string]$SourcePath=(Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.FolderTags.cs'))
+param([string]$SourcePath=(Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.FolderTags.cs'))
 $ErrorActionPreference='Stop'
 $source=[IO.File]::ReadAllText($SourcePath)
 $method=[regex]::Match($source,'(?sm)^    internal void RefreshFolderTags\(\).*?^    }').Value

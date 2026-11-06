@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$source = Join-Path $repo 'src\Span\Span\Models\PaneLayoutGeometry.cs'
+$source = Join-Path $repo 'src\OrielFolder\OrielFolder\Models\PaneLayoutGeometry.cs'
 if (-not (Test-Path -LiteralPath $source)) { throw 'Pane layout geometry is not implemented.' }
 Add-Type -TypeDefinition ([IO.File]::ReadAllText($source))
 
@@ -17,7 +17,7 @@ foreach ($case in @(
     @([double]::PositiveInfinity, 0.2, 0.5), @(1000, [double]::NaN, 0.5),
     @(1000, [double]::PositiveInfinity, 0.5)
 )) {
-    Assert-Near ([Span.Models.PaneLayoutGeometry]::ClampSplitRatio($case[0], $case[1])) $case[2] 'Split ratio must preserve visible panes.'
+    Assert-Near ([OrielFolder.Models.PaneLayoutGeometry]::ClampSplitRatio($case[0], $case[1])) $case[2] 'Split ratio must preserve visible panes.'
 }
 Write-Output 'PASS: split ratios preserve minimum sizes and reject non-finite inputs'
 
@@ -30,7 +30,7 @@ foreach ($case in @(
     @(900, [int]::MinValue, 0, 1920, 480, 480),
     @(900, 0, [int]::MinValue, [int]::MaxValue, 480, 900)
 )) {
-    $actual = [Span.Models.PaneLayoutGeometry]::WindowWidthForColumnDrag($case[0], $case[1], $case[2], $case[3], $case[4])
+    $actual = [OrielFolder.Models.PaneLayoutGeometry]::WindowWidthForColumnDrag($case[0], $case[1], $case[2], $case[3], $case[4])
     if ($actual -ne $case[5]) { throw "Window bounds expected $($case[5]), received $actual." }
 }
 Write-Output 'PASS: window growth and shrink stay in positive and negative monitor work areas'
@@ -39,7 +39,7 @@ foreach ($case in @(@(2, 2, 1000, 600), @(3, 2, 900, 600), @(5, 3, 1200, 800), @
     $count, $requestedColumns, $width, $height = $case
     $columns = [Math]::Clamp($requestedColumns, 1, $count)
     $rows = [Math]::Ceiling($count / $columns)
-    $tiles = [Span.Models.PaneLayoutGeometry]::Tile($count, $requestedColumns, $width, $height)
+    $tiles = [OrielFolder.Models.PaneLayoutGeometry]::Tile($count, $requestedColumns, $width, $height)
     if ($tiles.Length -ne $count) { throw 'Grid must retain every pane.' }
     for ($index = 0; $index -lt $count; $index++) {
         Assert-Near $tiles[$index].X (($index % $columns) * $width / $columns) 'Grid column position.'
@@ -49,19 +49,19 @@ foreach ($case in @(@(2, 2, 1000, 600), @(3, 2, 900, 600), @(5, 3, 1200, 800), @
     }
 }
 foreach ($hostSize in @(@(0, 0), @(-20, -30), @([double]::NaN, [double]::PositiveInfinity))) {
-    foreach ($tile in [Span.Models.PaneLayoutGeometry]::Tile(3, 2, $hostSize[0], $hostSize[1])) {
+    foreach ($tile in [OrielFolder.Models.PaneLayoutGeometry]::Tile(3, 2, $hostSize[0], $hostSize[1])) {
         Assert-Near $tile.X 0 'Invalid host X.'
         Assert-Near $tile.Y 0 'Invalid host Y.'
         Assert-Near $tile.Width 0 'Invalid host width.'
         Assert-Near $tile.Height 0 'Invalid host height.'
     }
 }
-if ([Span.Models.PaneLayoutGeometry]::Tile(0, 2, 1000, 600).Length -ne 0 -or [Span.Models.PaneLayoutGeometry]::Tile(-1, 2, 1000, 600).Length -ne 0) {
+if ([OrielFolder.Models.PaneLayoutGeometry]::Tile(0, 2, 1000, 600).Length -ne 0 -or [OrielFolder.Models.PaneLayoutGeometry]::Tile(-1, 2, 1000, 600).Length -ne 0) {
     throw 'An empty pane collection must produce an empty layout.'
 }
 Write-Output 'PASS: regular grids cover 2, 3, and 5 panes and handle empty or invalid hosts'
 
-$weighted = [Span.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]@(1, 3), [double[]]@(3, 1))
+$weighted = [OrielFolder.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]@(1, 3), [double[]]@(3, 1))
 foreach ($case in @(@(0, 0, 0, 250, 600), @(1, 250, 0, 750, 600), @(2, 0, 600, 250, 200), @(3, 250, 600, 750, 200))) {
     $tile = $weighted[$case[0]]
     Assert-Near $tile.X $case[1] 'Weighted grid X.'
@@ -69,20 +69,20 @@ foreach ($case in @(@(0, 0, 0, 250, 600), @(1, 250, 0, 750, 600), @(2, 0, 600, 2
     Assert-Near $tile.Width $case[3] 'Weighted grid width.'
     Assert-Near $tile.Height $case[4] 'Weighted grid height.'
 }
-$partial = [Span.Models.PaneLayoutGeometry]::Tile(3, 2, 1000, 800, [double[]]@(1, 3), [double[]]@(3, 1))
+$partial = [OrielFolder.Models.PaneLayoutGeometry]::Tile(3, 2, 1000, 800, [double[]]@(1, 3), [double[]]@(3, 1))
 if ($partial.Length -ne 3) { throw 'Weighted layout must not create an unused cell as a pane.' }
 Assert-Near $partial[2].Y 600 'Partial final weighted row.'
 foreach ($invalidWeights in @(@(0, 3), @(-1, 3), @([double]::NaN, 3), @([double]::PositiveInfinity, 3), @(1), @())) {
-    $tiles = [Span.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]$invalidWeights, [double[]]$invalidWeights)
+    $tiles = [OrielFolder.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]$invalidWeights, [double[]]$invalidWeights)
     Assert-Near $tiles[0].Width 500 'Invalid column weights must use equal sizes.'
     Assert-Near $tiles[0].Height 400 'Invalid row weights must use equal sizes.'
     Assert-Near $tiles[3].X 500 'Equal fallback column position.'
     Assert-Near $tiles[3].Y 400 'Equal fallback row position.'
 }
-$unweighted = [Span.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, $null, $null)
+$unweighted = [OrielFolder.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, $null, $null)
 Assert-Near $unweighted[0].Width 500 'Missing column weights must use equal sizes.'
 Assert-Near $unweighted[0].Height 400 'Missing row weights must use equal sizes.'
-$largeWeights = [Span.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]@([double]::MaxValue, [double]::MaxValue), [double[]]@(3, 1))
+$largeWeights = [OrielFolder.Models.PaneLayoutGeometry]::Tile(4, 2, 1000, 800, [double[]]@([double]::MaxValue, [double]::MaxValue), [double[]]@(3, 1))
 Assert-Near $largeWeights[0].Width 500 'Finite weight totals must not overflow.'
 Assert-Near $largeWeights[0].Height 600 'Each axis must retain its own proportions.'
 Write-Output 'PASS: weighted grid dividers size rows and columns independently with equal fallback for invalid weights'
@@ -99,8 +99,8 @@ foreach ($case in @(
     @(10, 20, 300, 200, 0, -5, 0, 0, 0, 0),
     @(10, 20, 300, 200, [double]::NaN, [double]::PositiveInfinity, 0, 0, 0, 0)
 )) {
-    $bounds = [Span.Models.PaneBounds]::new($case[0], $case[1], $case[2], $case[3])
-    $actual = [Span.Models.PaneLayoutGeometry]::ConstrainFloating($bounds, $case[4], $case[5])
+    $bounds = [OrielFolder.Models.PaneBounds]::new($case[0], $case[1], $case[2], $case[3])
+    $actual = [OrielFolder.Models.PaneLayoutGeometry]::ConstrainFloating($bounds, $case[4], $case[5])
     Assert-Near $actual.X $case[6] 'Floating pane X.'
     Assert-Near $actual.Y $case[7] 'Floating pane Y.'
     Assert-Near $actual.Width $case[8] 'Floating pane width.'

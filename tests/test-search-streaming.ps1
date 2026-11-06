@@ -1,31 +1,31 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 # Reuse the real query/filter source list, without executing the matching tests.
 $matching = [IO.File]::ReadAllText((Join-Path $PSScriptRoot 'test-search-matching.ps1'))
 $prefix = $matching.Substring(0, $matching.IndexOf('$handler ='))
 Invoke-Expression $prefix.Replace('$PSScriptRoot', "'$($PSScriptRoot.Replace("'", "''"))'")
-$start = $header.IndexOf('namespace Span.Models')
+$start = $header.IndexOf('namespace OrielFolder.Models')
 $header = $header.Substring(0,$start) + @'
-namespace Span.Models {
+namespace OrielFolder.Models {
     public class FolderItem { public string Name = "", Path = ""; public DateTime DateModified; public bool IsHidden; }
     public class FileItem : FolderItem { public long Size; public string FileType = ""; }
 }
-namespace Span.Services { public class FileSystemService {} public static class LocalizationService {
+namespace OrielFolder.Services { public class FileSystemService {} public static class LocalizationService {
     public static string L(string key) => key;
 } }
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public class FileSystemViewModel {
         public string Name = "", Path = "", LocationPath = "";
         public long SizeValue; public DateTime DateModifiedValue;
     }
     public class FileViewModel : FileSystemViewModel {
         public static Action? BeforeCreate;
-        public FileViewModel(Span.Models.FileItem model) {
+        public FileViewModel(OrielFolder.Models.FileItem model) {
             BeforeCreate?.Invoke(); Name=model.Name; Path=model.Path; SizeValue=model.Size; DateModifiedValue=model.DateModified;
         }
     }
     public class FolderViewModel : FileSystemViewModel {
-        public FolderViewModel(Span.Models.FolderItem model, Span.Services.FileSystemService service) {
+        public FolderViewModel(OrielFolder.Models.FolderItem model, OrielFolder.Services.FileSystemService service) {
             Name=model.Name; Path=model.Path; DateModifiedValue=model.DateModified;
         }
         public System.Collections.ObjectModel.ObservableCollection<FileSystemViewModel> Children = new();
@@ -43,7 +43,7 @@ namespace Span.ViewModels {
     }
 }
 '@
-$header = "using System.Threading.Channels;`nusing System.ComponentModel;`nusing Span.Services;`n" + $header.Replace('#nullable enable', '')
+$header = "using System.Threading.Channels;`nusing System.ComponentModel;`nusing OrielFolder.Services;`n" + $header.Replace('#nullable enable', '')
 $codeFiles = @('Helpers\FileVisibility.cs','Services\RecursiveSearchService.cs')
 foreach($file in $codeFiles) {
     $code = [regex]::Replace([IO.File]::ReadAllText((Join-Path $root $file)), '(?m)^using .*;\r?\n', '')
@@ -57,7 +57,7 @@ $methods = foreach($name in @('public async Task StartRecursiveSearchAsync','pub
     $match.Value
 }
 $vmHost = @'
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public partial class ExplorerViewModel {
         private FolderViewModel? _searchResultFolder;
         private List<FolderViewModel>? _preSearchColumns;
@@ -134,7 +134,7 @@ namespace SearchTests {
             vm.Columns.Add(original);
             await vm.StartRecursiveSearchAsync(SearchQueryParser.Parse("年度"),root,true);
             var stale = new List<Action>();
-            while(Span.ViewModels.Progress<RecursiveSearchService.SearchProgress>.Pending.TryDequeue(out var callback)) stale.Add(callback);
+            while(OrielFolder.ViewModels.Progress<RecursiveSearchService.SearchProgress>.Pending.TryDequeue(out var callback)) stale.Add(callback);
             await vm.StartRecursiveSearchAsync(SearchQueryParser.Parse("report"),root,true);
             string currentStatus=vm.SearchStatusText;
             foreach(var callback in stale) callback();

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\App.xaml.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\App.xaml.cs'))
 $apply = [regex]::Match($source, '(?sm)^        private void ApplySystemAccentColor\(\).*?^        }').Value
 $color = [regex]::Match($source, '(?sm)^        private static Windows.UI.Color ColorFromHex\(.*?^        }').Value
 if (-not $apply -or -not $color) { throw 'Accent implementation not found.' }
@@ -30,22 +30,22 @@ $driver = @'
         var app=new AccentProbe();
         foreach(var name in new[]{"Light","Dark","HighContrast","HighContrastBlack"}) {
             var dictionary=new Microsoft.UI.Xaml.ResourceDictionary();
-            dictionary["SpanAccentBrush"]=new object();
-            dictionary["SpanBgSelectedBrush"]=new object();
+            dictionary["OrielFolderAccentBrush"]=new object();
+            dictionary["OrielFolderBgSelectedBrush"]=new object();
             app.Resources.ThemeDictionaries[name]=dictionary;
         }
         var before=new Dictionary<string,object>();
         foreach(var entry in app.Resources.ThemeDictionaries)
-            before[(string)entry.Key]=((Microsoft.UI.Xaml.ResourceDictionary)entry.Value)["SpanAccentBrush"];
+            before[(string)entry.Key]=((Microsoft.UI.Xaml.ResourceDictionary)entry.Value)["OrielFolderAccentBrush"];
         app.Apply();
         foreach(var name in new[]{"Light","Dark"}) {
             var dictionary=(Microsoft.UI.Xaml.ResourceDictionary)app.Resources.ThemeDictionaries[name];
-            if(ReferenceEquals(before[name],dictionary["SpanAccentBrush"])) throw new Exception(name+" lost system accent updates.");
+            if(ReferenceEquals(before[name],dictionary["OrielFolderAccentBrush"])) throw new Exception(name+" lost system accent updates.");
             if(!dictionary.ContainsKey("ListViewItemBackgroundSelected")) throw new Exception(name+" lacks scoped selection accent.");
         }
         foreach(var name in new[]{"HighContrast","HighContrastBlack"}) {
             var dictionary=(Microsoft.UI.Xaml.ResourceDictionary)app.Resources.ThemeDictionaries[name];
-            if(!ReferenceEquals(before[name],dictionary["SpanAccentBrush"]) || dictionary.Count!=2)
+            if(!ReferenceEquals(before[name],dictionary["OrielFolderAccentBrush"]) || dictionary.Count!=2)
                 throw new Exception(name+" system contrast resources were overwritten at startup.");
         }
         if(app.Resources.ContainsKey("ListViewItemBackgroundSelected")) throw new Exception("Global selection masks contrast dictionaries.");

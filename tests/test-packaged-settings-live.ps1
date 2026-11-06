@@ -21,7 +21,7 @@ public static class SettingsValuesProbe {
 }
 '@
     $package = [Windows.ApplicationModel.Package,Windows.ApplicationModel,ContentType=WindowsRuntime]::Current
-    if ($package.Id.FamilyName -ne 'LocalDevelopment.SpanDev_ntdptrdpt73g6') { throw 'Wrong test package identity.' }
+    if ($package.Id.FamilyName -ne 'LocalDevelopment.OrielFolderDev_tvznpbczqragy') { throw 'Wrong test package identity.' }
     $data = [Windows.Storage.ApplicationData,Windows.Storage,ContentType=WindowsRuntime]::Current
     $root = $data.LocalSettings
     $containerName = 'PersistenceProbe-' + $RunId

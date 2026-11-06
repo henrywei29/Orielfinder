@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.xaml.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.xaml.cs'))
 $methods = @()
 foreach ($name in @('OnColumnsChanged', 'OnRightColumnsChanged', 'AdjustSpacerAndScrollAfterReplace', 'SetMillerSpacerWidth', 'SetAutoFitColumnWidth')) {
     $match = [regex]::Match($source, '(?sm)^        private void ' + $name + '\(.*?(?=^        (?:private |///|// ={5}|#))')
@@ -26,14 +26,14 @@ namespace Microsoft.UI.Dispatching {
         public void Flush() { while (Pending.Count > 0) Pending.Dequeue()(); }
     }
 }
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
-namespace Span.ViewModels {
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
+namespace OrielFolder.ViewModels {
     public class ExplorerViewModel {
         public List<object> Columns = new() { new(), new(), new() };
         public bool IsReplacingLastColumn;
     }
 }
-namespace Span {
+namespace OrielFolder {
     public enum ViewMode { MillerColumns }
     public enum ListViewSelectionMode { Extended, Multiple }
     public class Border { public double Width; }
@@ -137,7 +137,7 @@ if ($source -notmatch 'SetAutoFitColumnWidth\(widthGrid, fitted\);') { throw 'As
 foreach ($right in @($false, $true)) {
     foreach ($mode in @(0, 1, 2)) {
         foreach ($replace in @($false, $true)) {
-            $window = [Span.MainWindow]::new()
+            $window = [OrielFolder.MainWindow]::new()
             $window._settings.MillerFolderOpenAlignment = $mode
             $control = if ($right) { $window.MillerColumnsControlRight } else { $window.MillerColumnsControl }
             $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
@@ -159,7 +159,7 @@ foreach ($right in @($false, $true)) {
 
 foreach ($right in @($false, $true)) {
     foreach ($width in @(220, 950)) {
-        $window = [Span.MainWindow]::new()
+        $window = [OrielFolder.MainWindow]::new()
         $window.ColumnWidth = $width
         $window.AddColumn($right)
         $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
@@ -176,7 +176,7 @@ foreach ($right in @($false, $true)) {
         }
         Write-Output "PASS: replacement aligns containing column (right=$right, width=$width)"
     }
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $explorer = if ($right) { $window.ViewModel.RightExplorer } else { $window.ViewModel.LeftExplorer }
     $spacer = if ($right) { $window.MillerColumnSpacerRight } else { $window.MillerColumnSpacerLeft }
@@ -186,7 +186,7 @@ foreach ($right in @($false, $true)) {
     if ($window.ScrollRequests -ne 0 -or $spacer.Width -ne 80 -or $scroller.HorizontalOffset -ne 0) { throw 'A root column failed to align with valid trailing space.' }
     Write-Output "PASS: root alignment retains necessary trailing space (right=$right)"
 
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $explorer = if ($right) { $window.ViewModel.RightExplorer } else { $window.ViewModel.LeftExplorer }
     $spacer = if ($right) { $window.MillerColumnSpacerRight } else { $window.MillerColumnSpacerLeft }
@@ -200,7 +200,7 @@ foreach ($right in @($false, $true)) {
     if ($clampedOffset -ne 220 -or $scroller.HorizontalOffset -ne 220) { throw "Adding after replacement cannot align the selected column (right=$right)." }
     Write-Output "PASS: replacement then add can align even in a wide viewport (right=$right)"
 
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $control = if ($right) { $window.MillerColumnsControlRight } else { $window.MillerColumnsControl }
     $spacer = if ($right) { $window.MillerColumnSpacerRight } else { $window.MillerColumnSpacerLeft }
     $control.Widths = [double[]]@(950, 950, 220)
@@ -210,7 +210,7 @@ foreach ($right in @($false, $true)) {
     Write-Output "PASS: mixed-width removal reserves actual disappearing width (right=$right)"
 }
 
-$window = [Span.MainWindow]::new()
+$window = [OrielFolder.MainWindow]::new()
 $window.LeftScroller.ViewportWidth = 1000
 $window.LeftScroller.HorizontalOffset = 100
 $window.MillerColumnSpacerLeft.Width = 660
@@ -224,7 +224,7 @@ if ($clampedOffset -ne 220 -or $window.MillerScrollViewerRight.ViewChanges -ne 0
 Write-Output 'PASS: deferred layout uses the original pane and column widths'
 
 foreach ($right in @($false, $true)) {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $scroller.SimulateLayoutClamping = $true
     $scroller.ContentWidth = 660
@@ -236,7 +236,7 @@ foreach ($right in @($false, $true)) {
 }
 
 foreach ($right in @($false, $true)) {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $control = if ($right) { $window.MillerColumnsControlRight } else { $window.MillerColumnsControl }
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $control.Widths = [double[]]@(315, 480, 120)
@@ -246,13 +246,13 @@ foreach ($right in @($false, $true)) {
 }
 
 foreach ($right in @($false, $true)) {
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $spacer = if ($right) { $window.MillerColumnSpacerRight } else { $window.MillerColumnSpacerLeft }
     $scroller.ViewportWidth = 1000
     $scroller.HorizontalOffset = 125 # User scrolled after the original alignment.
     $spacer.Width = 465
-    $grid = [Span.Grid]::new()
+    $grid = [OrielFolder.Grid]::new()
     $grid.ActualWidth = 220
     $grid.Parent = $scroller
     $grid.WidthChanged = [Action[double]] {
@@ -263,12 +263,12 @@ foreach ($right in @($false, $true)) {
     if ($scroller.HorizontalOffset -ne 125 -or $scroller.ViewChanges -ne 0) { throw "Async AutoFit shrink clamped or overrode manual scrolling (right=$right)." }
     Write-Output "PASS: async AutoFit preserves the user's current offset (right=$right)"
 
-    $window = [Span.MainWindow]::new()
+    $window = [OrielFolder.MainWindow]::new()
     $scroller = if ($right) { $window.MillerScrollViewerRight } else { $window.LeftScroller }
     $scroller.DispatcherQueue.Defer = $true
     $window.AddColumn($right)
-    if ($right) { $window.ViewModel.RightExplorer = [Span.ViewModels.ExplorerViewModel]::new() }
-    else { $window.ViewModel.LeftExplorer = [Span.ViewModels.ExplorerViewModel]::new() }
+    if ($right) { $window.ViewModel.RightExplorer = [OrielFolder.ViewModels.ExplorerViewModel]::new() }
+    else { $window.ViewModel.LeftExplorer = [OrielFolder.ViewModels.ExplorerViewModel]::new() }
     $scroller.DispatcherQueue.Flush()
     if ($scroller.ViewChanges -ne 0) { throw 'A stale callback aligned a different tab group.' }
     Write-Output "PASS: changing groups discards the old alignment callback (right=$right)"

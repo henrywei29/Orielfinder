@@ -1,6 +1,8 @@
-﻿param([switch]$SkipBuild)
+param([switch]$SkipBuild)
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
+[xml]$sourceManifest = Get-Content -LiteralPath (Join-Path $root 'src\OrielFolder\OrielFolder\Package.appxmanifest')
+if ($sourceManifest.Package.Identity.Name -ne 'OrielFolder.Desktop' -or $sourceManifest.Package.Identity.Publisher -ne 'CN=OrielFolder') { throw 'This checkout is configured as isolated OrielFolder Dev. Use build-dev.ps1 and start-dev.ps1.' }
 $tools = Join-Path (Split-Path $root -Parent) '.tools'
 $env:DOTNET_ROOT = Join-Path $tools 'dotnet'
 $env:DOTNET_CLI_HOME = Join-Path $tools 'cli-home'
@@ -10,9 +12,9 @@ $output = 'D:\codex\OrielFolder'
 $build = Join-Path $output 'build\net8.0-windows10.0.19041.0\win-x64'
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 if (!$SkipBuild) {
-    & $dotnet build (Join-Path $root 'src\Span\Span\Span.csproj') -c Debug -p:Platform=x64 "-p:OrielOutputPath=$output\build\" -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
+    & $dotnet build (Join-Path $root 'src\OrielFolder\OrielFolder\OrielFolder.csproj') -c Debug -p:Platform=x64 "-p:OrielOutputPath=$output\build\" -p:AppxPackageSigningEnabled=false -p:GenerateAppxPackageOnBuild=false
     if ($LASTEXITCODE) { throw 'Application build failed.' }
-    & $dotnet build (Join-Path $root 'src\Span\Listary.FileAppPlugin.SpanDev\Listary.FileAppPlugin.SpanDev.csproj') -c Release
+    & $dotnet build (Join-Path $root 'src\OrielFolder\Listary.FileAppPlugin.OrielFolder\Listary.FileAppPlugin.OrielFolder.csproj') -c Release
     if ($LASTEXITCODE) { throw 'Listary adapter build failed.' }
 }
 $run = Join-Path $output ('distribution-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
@@ -42,13 +44,13 @@ Export-Certificate -Cert $certificate -FilePath (Join-Path $payload 'OrielFolder
 if ($LASTEXITCODE) { throw 'MSIX packing failed.' }
 & (Join-Path $sdk 'signtool.exe') sign /fd SHA256 /sha1 $certificate.Thumbprint /s My (Join-Path $payload 'OrielFolder.msix')
 if ($LASTEXITCODE) { throw 'MSIX signing failed.' }
-Copy-Item -LiteralPath (Join-Path $root 'src\Span\Span\Assets\ProductIcons\blue.ico') -Destination (Join-Path $payload 'OrielFolder.ico')
+Copy-Item -LiteralPath (Join-Path $root 'src\OrielFolder\OrielFolder\Assets\ProductIcons\blue.ico') -Destination (Join-Path $payload 'OrielFolder.ico')
 Copy-Item -LiteralPath (Join-Path $tools 'MicrosoftEdgeWebview2Setup.exe') -Destination $payload
-foreach ($file in @('Install-OrielFolder.ps1','Install-OrielFolder-Machine.ps1')) { Copy-Item -LiteralPath (Join-Path $root "installer\$file") -Destination $payload }
+foreach ($file in @('Install-OrielFolder.ps1','Install-OrielFolder-Machine.ps1','Initialize-InstallerPowerShell.ps1')) { Copy-Item -LiteralPath (Join-Path $root "installer\$file") -Destination $payload }
 $adapter = Join-Path $payload 'Listary'
 New-Item -ItemType Directory -Path $adapter | Out-Null
 foreach ($file in @('ListaryPluginManifest.json','Listary.FileAppPlugin.OrielFolder.dll','Icon.png')) {
-    Copy-Item -LiteralPath (Join-Path $root "src\Span\Listary.FileAppPlugin.SpanDev\bin\Release\net48\$file") -Destination $adapter
+    Copy-Item -LiteralPath (Join-Path $root "src\OrielFolder\Listary.FileAppPlugin.OrielFolder\bin\Release\net48\$file") -Destination $adapter
 }
 @'
 OrielFolder 1.0.1 — 首次安装说明

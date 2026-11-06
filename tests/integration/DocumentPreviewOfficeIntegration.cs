@@ -7,7 +7,7 @@ using System.Threading;
 using System.Text;
 using System.Collections.Generic;
 using System.Web.Script.Serialization;
-using Span.DocumentPreview.Worker;
+using OrielFolder.DocumentPreview.Worker;
 
 internal static class DocumentPreviewOfficeIntegration
 {

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.WorkspaceLayout.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.WorkspaceLayout.cs'))
 $method = [regex]::Match($source, '(?sm)^        private void ActivateWorkspaceView\(.*?^        }').Value
 if (-not $method) { throw 'Cannot locate production workspace activation.' }
 $hostSource = @'
@@ -7,7 +7,7 @@ $hostSource = @'
 using System;
 using System.Linq;
 using System.Collections.Generic;
-namespace Span {
+namespace OrielFolder {
     public enum Visibility { Visible, Collapsed }
     public enum PaneLayoutKind { Tiled, Floating }
     public class WorkspacePaneState { public object Explorer = new(); }
@@ -51,13 +51,13 @@ namespace Span {
         private void UpdateFileSystemWatcherPaths() { Watchers++; }
 '@
 Add-Type -TypeDefinition ($hostSource + $method + "`n} }")
-$window = [Span.MainWindow]::new()
-$pane = [Span.WorkspacePaneState]::new()
-$other = [Span.WorkspacePaneState]::new()
+$window = [OrielFolder.MainWindow]::new()
+$pane = [OrielFolder.WorkspacePaneState]::new()
+$other = [OrielFolder.WorkspacePaneState]::new()
 $group = $window.ViewModel.ActiveTab.WorkspaceLayout
 foreach($p in @($pane,$other)) {
     $group.Panes.Add($p)
-    $view = [Span.WorkspaceFolderPane]::new()
+    $view = [OrielFolder.WorkspaceFolderPane]::new()
     $window._workspaceViews.Add($p,$view)
     $window._workspaceCanvas.Children.Add($view)
 }
@@ -76,11 +76,11 @@ $window.Activate($other)
 if ($window.Watchers -ne 3 -or $window._workspaceViews[$other].Highlights -ne 3) { throw 'Group synchronization skipped required visual/watcher refresh.' }
 $window._syncingWorkspace = $false
 'PASS: group synchronization still restores active highlight and watchers'
-$group.Layout = [Span.PaneLayoutKind]::Floating
+$group.Layout = [OrielFolder.PaneLayoutKind]::Floating
 $window._workspaceViews[$pane].Z = 10
 $window.Activate($other)
 if ($window._workspaceViews[$other].Z -ne 1 -or $window._workspaceViews[$pane].Z -ne 0 -or $window.Watchers -ne 3) { throw 'Reactivating floating pane failed to raise it without repeating watcher work.' }
 'PASS: floating pane still moves to front on repeated activation'
-$window.Activate([Span.WorkspacePaneState]::new())
+$window.Activate([OrielFolder.WorkspacePaneState]::new())
 if ($window.Watchers -ne 3) { throw 'A foreign pane triggered updates.' }
 'PASS: foreign panes remain ignored'

@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\ListModeView.InlineTree.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\ListModeView.InlineTree.cs'))
 $method = [regex]::Match($source, '(?sm)^    private void RestoreTreeSelection\(.*?(?=^    private )').Value
 if (-not $method) { throw 'List selection restoration not found.' }
 $driver = @'

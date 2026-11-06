@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$root=Join-Path $PSScriptRoot '..\src\Span\Span\ViewModels'
+$root=Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\ViewModels'
 $folder=[IO.File]::ReadAllText((Join-Path $root 'FolderViewModel.cs'))
 $item=[IO.File]::ReadAllText((Join-Path $root 'FileSystemViewModel.cs'))
 $brush=[regex]::Match($folder,'(?s)public override Microsoft.UI.Xaml.Media.Brush IconBrush\s*=>\s*([^;]+);').Groups[1].Value

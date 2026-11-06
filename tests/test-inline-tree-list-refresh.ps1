@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\ListModeView.xaml.cs'))
+$ErrorActionPreference = 'Stop'
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\ListModeView.xaml.cs'))
 $sync = [regex]::Match($source, '(?sm)^        private void SyncListItems\(.*?^        }').Value
 $navigate = [regex]::Match($source, '(?sm)^        private void OnExplorerPropertyChanged\(.*?^        }').Value
 if (-not $sync -or -not $navigate) { throw 'List refresh methods not found.' }
@@ -37,7 +37,7 @@ public class ListRefreshProbe {
         return "PASS: actual List methods rebuild the active grouped/plain source and replace moved stale VM references";
     }
 '@
-$rows = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Helpers\VisibleRows.cs'))
-$rows = [regex]::Replace($rows, '(?m)^using .*;\r?\n', '') -replace 'namespace Span.Helpers;', 'namespace Helpers {'
+$rows = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Helpers\VisibleRows.cs'))
+$rows = [regex]::Replace($rows, '(?m)^using .*;\r?\n', '') -replace 'namespace OrielFolder.Helpers;', 'namespace Helpers {'
 Add-Type -TypeDefinition ($driver + $sync + $navigate + "`n}" + $rows + "`n}")
 [ListRefreshProbe]::Run()

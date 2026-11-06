@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.InlineTree.cs'))
+$ErrorActionPreference = 'Stop'
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.InlineTree.cs'))
 $method = [regex]::Match($source, '(?sm)^    private void SetTreeItemsSource\(.*?(?=^    private )').Value
 if (-not $method) { throw 'Selection-preserving source setter not found.' }
 $driver = @'
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.ObjectModel;
-using Span.Helpers;
+using OrielFolder.Helpers;
 namespace Microsoft.UI.Xaml.Data {
  public class CollectionViewSource {
   public object Source { get; set; } public bool IsSourceGrouped {get;set;}
@@ -78,7 +78,7 @@ public class SelectionProbe {
         return "PASS: actual Details source setter retains visible nested/multiple selection and clears hidden action targets";
     }
 '@
-$rows = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Helpers\VisibleRows.cs'))
-$rows = [regex]::Replace($rows, '(?m)^using .*;\r?\n', '') -replace 'namespace Span.Helpers;', 'namespace Span.Helpers {'
+$rows = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Helpers\VisibleRows.cs'))
+$rows = [regex]::Replace($rows, '(?m)^using .*;\r?\n', '') -replace 'namespace OrielFolder.Helpers;', 'namespace OrielFolder.Helpers {'
 Add-Type -TypeDefinition ($driver + $method + "`n}" + $rows + "`n}")
 [SelectionProbe]::Run()

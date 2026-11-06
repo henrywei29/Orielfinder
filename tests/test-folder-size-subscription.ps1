@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\ViewModels\FolderViewModel.cs'))
+$ErrorActionPreference='Stop'
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\ViewModels\FolderViewModel.cs'))
 $method=[regex]::Match($source,'(?sm)^        public void RequestFolderSizeCalculation\(.*?^        }').Value
 $cancel=[regex]::Match($source,'(?sm)^        public void CancelLoading\(.*?^        }').Value
 $unsubscribe=[regex]::Match($source,'(?sm)^        private void UnsubscribeFolderSizeEvent\(.*?^        }').Value

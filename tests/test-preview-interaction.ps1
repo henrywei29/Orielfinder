@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\QuickLookWindow.xaml.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\QuickLookWindow.xaml.cs'))
 $handler = [regex]::Match($source,'(?sm)^        private void OnContentPreviewKeyDown\(.*?^        }').Value
 if (-not $handler) { throw 'Cannot locate actual Quick Look keyboard handler.' }
 $hostSource = @'
@@ -50,7 +50,7 @@ foreach($key in @('Space','Escape','Right','Left','Up','Down','Delete')) {
 }
 if($window.Closed -ne 0 -or $window.SiblingDelta -ne 0 -or $window.Deletes -ne 0){throw 'Browser text editing triggered a window, navigation or file-deletion action.'}
 'PASS: browser focus preserves editing keys and cannot delete the selected file'
-$viewSource = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Views\DocumentPreviewView.cs'))
+$viewSource = [IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DocumentPreviewView.cs'))
 $focusGetter = [regex]::Match($viewSource,'(?sm)^    public bool HasBrowserFocus\s*\{.*?^    }').Value
 if(-not $focusGetter){throw 'Cannot locate actual browser focus property.'}
 $focusHost = @'
@@ -109,7 +109,7 @@ $failure.Fail(2)
 if($failure.Failures -ne 2){throw 'A later image cannot trigger its own native fallback.'}
 'PASS: image fallback is current-image-only, once per load and suppressed after unloading'
 foreach($file in @('QuickLookWindow.xaml.cs','PreviewPanelView.xaml.cs')) {
-    $view = [IO.File]::ReadAllText((Join-Path $PSScriptRoot "..\src\Span\Span\Views\$file"))
+    $view = [IO.File]::ReadAllText((Join-Path $PSScriptRoot "..\src\OrielFolder\OrielFolder\Views\$file"))
     $hostHandler = [regex]::Match($view,'(?sm)^        private void OnImagePreviewFailed\(.*?^        }').Value
     if(-not $hostHandler){throw "Cannot locate native fallback handler in $file."}
     $name = if($file -eq 'QuickLookWindow.xaml.cs'){'QuickLookFallbackHarness'}else{'PanelFallbackHarness'}

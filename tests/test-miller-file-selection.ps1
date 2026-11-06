@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$sourcePath = Join-Path $PSScriptRoot '..\src\Span\Span\ViewModels\ExplorerViewModel.cs'
+$sourcePath = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\ViewModels\ExplorerViewModel.cs'
 $source = [System.IO.File]::ReadAllText($sourcePath)
 $match = [regex]::Match($source,
     '(?s)        private void HandleFileSelection\(FileViewModel fileVm, int nextIndex\).*?(?=\r?\n        /// <summary>)')
@@ -16,13 +16,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string message) {} }
     public static class ArchivePathHelper {
         public static bool IsBrowsableArchive(string path) => path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
     }
 }
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public sealed class FileViewModel {
         public string Path { get; set; } = string.Empty;
         public string Name => System.IO.Path.GetFileName(Path);
@@ -52,16 +52,16 @@ $cases = @(
     @{ Name = 'Last-column selection still updates preview'; Columns = @('D:\', 'D:\app'); Index = 2; Path = 'D:\app\notes.txt' }
 )
 foreach ($case in $cases) {
-    $explorer = [Span.ViewModels.ExplorerViewModel]::new()
+    $explorer = [OrielFolder.ViewModels.ExplorerViewModel]::new()
     foreach ($path in $case.Columns) {
-        $folder = [Span.ViewModels.FolderViewModel]::new()
+        $folder = [OrielFolder.ViewModels.FolderViewModel]::new()
         $folder.Path = $path
         $explorer.Columns.Add($folder)
     }
     if ($explorer.CurrentFolder.Path -ne $case.Columns[-1]) {
         throw "$($case.Name): the initial current-folder fallback changed."
     }
-    $selected = [Span.ViewModels.FileViewModel]::new()
+    $selected = [OrielFolder.ViewModels.FileViewModel]::new()
     $selected.Path = $case.Path
     $explorer.SelectFile($selected, $case.Index)
     if (($explorer.Columns.Path -join '|') -ne ($case.Columns -join '|')) {
@@ -82,8 +82,8 @@ foreach ($case in $cases) {
 
 # Archive browsing and shortcut resolution retain their original dispatch behavior.
 foreach ($extension in @('.zip', '.lnk')) {
-    $explorer = [Span.ViewModels.ExplorerViewModel]::new()
-    $selected = [Span.ViewModels.FileViewModel]::new()
+    $explorer = [OrielFolder.ViewModels.ExplorerViewModel]::new()
+    $selected = [OrielFolder.ViewModels.FileViewModel]::new()
     $selected.Path = 'D:\sample' + $extension
     $explorer.SelectFile($selected, 0)
     if ($explorer.ArchiveRequests + $explorer.ShortcutRequests -ne 1 -or $explorer.SelectedFile) {

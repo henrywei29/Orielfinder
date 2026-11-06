@@ -1,11 +1,11 @@
 $ErrorActionPreference='Stop'
-$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Controls\AddressBarControl.xaml.cs'))
+$source=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Controls\AddressBarControl.xaml.cs'))
 $method=[regex]::Match($source,'(?sm)^        private void UpdateBreadcrumbLabels\(.*?^        }').Value
 $watch=[regex]::Match($source,'(?sm)^        private void WatchPathSegments\(.*?^        }').Value
 $changed=[regex]::Match($source,'(?sm)^        private void OnSegmentsCollectionChanged\(.*?^        }').Value
 if(-not $method){throw 'Adaptive breadcrumb layout is missing; current binding always truncates names.'}
-$formatter=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\Span\Span\Helpers\CompactNavigationLabel.cs'))
-$formatter=[regex]::Replace($formatter,'(?m)^using .*;\r?\n','') -replace 'namespace Span.Helpers;', 'namespace Span.Helpers {'
+$formatter=[IO.File]::ReadAllText((Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Helpers\CompactNavigationLabel.cs'))
+$formatter=[regex]::Replace($formatter,'(?m)^using .*;\r?\n','') -replace 'namespace OrielFolder.Helpers;', 'namespace OrielFolder.Helpers {'
 $driver=@'
 #nullable enable annotations
 using System;
@@ -24,7 +24,7 @@ public class Repeater {public List<StackPanel> Rows=new();public object TryGetEl
 public class Scroller {public double ViewportWidth;}
 public class Suggest {public object FontFamily=new();}
 namespace Helpers {public class FontScaleService {public static FontScaleService Instance=new();public double AddressBarFontSize=12,AddressBarIconFontSize=14;}}
-namespace Span.Models {public class PathSegment {public string Name;public bool IsLast;public string IconGlyph;public string CompactName=>Span.Helpers.CompactNavigationLabel.Format(Name);}}
+namespace OrielFolder.Models {public class PathSegment {public string Name;public bool IsLast;public string IconGlyph;public string CompactName=>OrielFolder.Helpers.CompactNavigationLabel.Format(Name);}}
 public class AddressFitProbe {
  public IEnumerable PathSegments;
  public bool IsLoaded=true;INotifyCollectionChanged? _segmentChanges;int queued;
@@ -32,7 +32,7 @@ public class AddressFitProbe {
  double _fullBreadcrumbWidth=double.NaN,_measuredFontSize,_measuredIconSize;
  Scroller BreadcrumbScroller=new();Suggest AutoSuggest=new();Repeater BreadcrumbRepeater=new();
  public static string Run(){
-  var segment=new Span.Models.PathSegment{Name="Adobe Acrobat Pro DC 2019",IsLast=true};
+  var segment=new OrielFolder.Models.PathSegment{Name="Adobe Acrobat Pro DC 2019",IsLast=true};
   var p=new AddressFitProbe{PathSegments=new[]{segment}};var button=new Button{Content=segment.Name};var row=new StackPanel();row.Children.Add(button);p.BreadcrumbRepeater.Rows.Add(row);
   p.BreadcrumbScroller.ViewportWidth=800;p.UpdateBreadcrumbLabels();
   if(!Equals(button.Content,segment.Name))throw new Exception("Wide address bar must show full name");
@@ -42,9 +42,9 @@ public class AddressFitProbe {
   p.BreadcrumbScroller.ViewportWidth=800;p.UpdateBreadcrumbLabels();
   if(!Equals(button.Content,segment.Name))throw new Exception("Growing the address bar must restore full names");
   if(segment.Name!="Adobe Acrobat Pro DC 2019")throw new Exception("Underlying navigation name was changed");
-  var collection=new ObservableCollection<Span.Models.PathSegment>{segment};p.PathSegments=collection;p.WatchPathSegments();
+  var collection=new ObservableCollection<OrielFolder.Models.PathSegment>{segment};p.PathSegments=collection;p.WatchPathSegments();
   p.IsLoaded=false;p.WatchPathSegments();
-  collection.Clear();var longName=new Span.Models.PathSegment{Name=new string('W',200),IsLast=true};collection.Add(longName);
+  collection.Clear();var longName=new OrielFolder.Models.PathSegment{Name=new string('W',200),IsLast=true};collection.Add(longName);
   p.IsLoaded=true;p.WatchPathSegments();p.UpdateBreadcrumbLabels();
   if(!Equals(button.Content,new string('W',10)+"…"))throw new Exception("Reload reused width from before hidden path changes");
   p.WatchPathSegments();p.queued=0;collection[0]=segment;

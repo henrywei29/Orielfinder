@@ -1,5 +1,5 @@
-﻿$ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$ErrorActionPreference = 'Stop'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $path = Join-Path $root 'Services\ConfigurationBackupService.cs'
 if (-not (Test-Path -LiteralPath $path)) { throw 'Configuration backup export/import is not implemented.' }
 $header = @'
@@ -13,10 +13,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Span.Models;
-using Span.Services;
-using Span.Helpers;
-namespace Span.Helpers {
+using OrielFolder.Models;
+using OrielFolder.Services;
+using OrielFolder.Helpers;
+namespace OrielFolder.Helpers {
     public static class AppIdentity { public static string LocalDataRoot => throw new Exception("Real user data must not be used by tests."); }
     public static class DebugLogger { public static void Log(string text) {} }
 }
@@ -24,7 +24,7 @@ namespace Windows.Storage {
     public class Container { public IDictionary<string,object> Values = new Dictionary<string,object>(); }
     public class ApplicationData { public static ApplicationData Current = new(); public Container LocalSettings = new(); }
 }
-namespace Span.Models { public class FavoriteItem { public string Path=""; } }
+namespace OrielFolder.Models { public class FavoriteItem { public string Path=""; } }
 '@
 $sources = foreach($file in @('Models\ViewMode.cs','Models\TabStateDto.cs','Models\WorkspaceDto.cs','Services\WorkspaceService.cs','Services\PreviewLabelPresets.cs','Services\PreviewToolbarOrder.cs','Services\ConfigurationBackupService.cs')) {
     $code = [regex]::Replace([IO.File]::ReadAllText((Join-Path $root $file)), '(?m)^using .*;\r?\n','')
@@ -37,7 +37,7 @@ $applyOrder=[regex]::Match($favoriteSource,'(?sm)^        (?:private|internal) s
 $vmSource=[IO.File]::ReadAllText((Join-Path $root 'ViewModels\MainViewModel.cs'))
 $refreshOrder=[regex]::Match($vmSource,'(?sm)^        public void RefreshImportedFavoriteOrder\(.*?^        }').Value
 if (-not $refreshOrder) { $refreshOrder='public void RefreshImportedFavoriteOrder() {}' }
-$lifecycle='namespace Span.Services { public class FavoritesService { private const string FavoritesOrderKey="FavoritesOrderJson"; public static List<FavoriteItem> Reorder(List<FavoriteItem> items) => ApplySavedOrder(items);' + "`n"+$saveFavorites+$applyOrder+"`n} } namespace Span.ViewModels { public class MainViewModel { public ObservableCollection<FavoriteItem> Favorites = new();`n"+$refreshOrder+"`n} }"
+$lifecycle='namespace OrielFolder.Services { public class FavoritesService { private const string FavoritesOrderKey="FavoritesOrderJson"; public static List<FavoriteItem> Reorder(List<FavoriteItem> items) => ApplySavedOrder(items);' + "`n"+$saveFavorites+$applyOrder+"`n} } namespace OrielFolder.ViewModels { public class MainViewModel { public ObservableCollection<FavoriteItem> Favorites = new();`n"+$refreshOrder+"`n} }"
 $driver = @'
 public class FailOnceSettings : Dictionary<string,object>, IDictionary<string,object> {
     public string? FailOn;
@@ -137,7 +137,7 @@ public static class BackupTests {
         Check(secretPathRejected,"embedded URI credentials are not written into a backup");
         var live=Windows.Storage.ApplicationData.Current.LocalSettings.Values;
         live["FavoritesOrderJson"]="[\"D:\\\\b\",\"D:\\\\a\"]";
-        var vm=new Span.ViewModels.MainViewModel();
+        var vm=new OrielFolder.ViewModels.MainViewModel();
         vm.Favorites.Add(new FavoriteItem{Path=@"D:\a"}); vm.Favorites.Add(new FavoriteItem{Path=@"D:\b"});
         vm.RefreshImportedFavoriteOrder();
         new FavoritesService().SaveFavorites(vm.Favorites.ToList());

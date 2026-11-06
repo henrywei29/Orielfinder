@@ -1,14 +1,14 @@
 $ErrorActionPreference = 'Stop'
 $repo = Split-Path $PSScriptRoot -Parent
-$source = [IO.File]::ReadAllText((Join-Path $repo 'src\Span\Span\MainWindow.DragDropHandler.cs'))
+$source = [IO.File]::ReadAllText((Join-Path $repo 'src\OrielFolder\OrielFolder\MainWindow.DragDropHandler.cs'))
 $methods = foreach ($name in @('OnColumnResizeGripPointerPressed', 'OnColumnResizeGripPointerMoved', 'OnColumnResizeGripPointerReleased')) {
     $match = [regex]::Match($source, '(?sm)^        private void ' + $name + '\(.*?(?=^        (?:private |///|// ={5}|#))')
     if (-not $match.Success) { throw "Cannot locate production method $name." }
     $match.Value.TrimEnd()
 }
-$outerPath = Join-Path $repo 'src\Span\Span\MainWindow.OuterColumnResize.cs'
+$outerPath = Join-Path $repo 'src\OrielFolder\OrielFolder\MainWindow.OuterColumnResize.cs'
 $outer = if (Test-Path $outerPath) { [IO.File]::ReadAllText($outerPath) } else { '' }
-$geometryPath = Join-Path $repo 'src\Span\Span\Models\PaneLayoutGeometry.cs'
+$geometryPath = Join-Path $repo 'src\OrielFolder\OrielFolder\Models\PaneLayoutGeometry.cs'
 $geometry = if (Test-Path $geometryPath) { [IO.File]::ReadAllText($geometryPath) } else { '' }
 
 # Execute production gesture code, replacing only WinUI and native Windows calls.
@@ -24,7 +24,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Span.Helpers;
+using OrielFolder.Helpers;
 namespace Windows.Foundation {
     public struct Point { public double X, Y; public Point(double x, double y) { X=x; Y=y; } }
 }
@@ -90,7 +90,7 @@ namespace Microsoft.UI.Xaml.Input {
     }
     public class PointerPoint { public Windows.Foundation.Point Position; }
 }
-namespace Span.Helpers {
+namespace OrielFolder.Helpers {
     public static class VisualTreeHelpers { public static T? FindChild<T>(ContentPresenter p) where T:class => p.Child as T; }
     public static class NativeMethods {
         public struct RECT { public int Left,Top,Right,Bottom; }
@@ -123,7 +123,7 @@ namespace Span.Helpers {
         }
     }
 }
-namespace Span {
+namespace OrielFolder {
     public class Explorer { public List<object> Columns = new() { new(),new(),new() }; }
     public class Vm { public Explorer ActiveExplorer = new(); }
     public sealed partial class MainWindow {
@@ -338,8 +338,8 @@ $insertAt = $hostSource.IndexOf('        public void Press(')
 $hostSource = $hostSource.Insert($insertAt, ($methods -join "`n") + "`n")
 $outer = [regex]::Replace($outer, '(?m)^using [^;]+;\r?\n', '')
 $geometry = [regex]::Replace($geometry, '(?m)^using [^;]+;\r?\n', '')
-if ($geometry -match 'namespace Span.Models;') {
-    $geometry = $geometry.Replace('namespace Span.Models;', 'namespace Span.Models {') + "`n}"
+if ($geometry -match 'namespace OrielFolder.Models;') {
+    $geometry = $geometry.Replace('namespace OrielFolder.Models;', 'namespace OrielFolder.Models {') + "`n}"
 }
 Add-Type -TypeDefinition ($hostSource + "`n" + $outer + "`n" + $geometry)
-[Span.MainWindow]::Run()
+[OrielFolder.MainWindow]::Run()

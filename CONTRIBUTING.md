@@ -21,10 +21,10 @@ git clone https://github.com/henrywei29/Orielfinder.git
 cd Orielfolder
 
 # Build (x64)
-dotnet build src/Span/Span/Span.csproj -p:Platform=x64
+dotnet build src/OrielFolder/OrielFolder/OrielFolder.csproj -p:Platform=x64
 
 # Run unit tests
-dotnet test src/Span/Span.Tests/Span.Tests.csproj -p:Platform=x64
+dotnet test src/OrielFolder/OrielFolder.Tests/OrielFolder.Tests.csproj -p:Platform=x64
 ```
 
 > **Note**: WinUI 3 apps cannot be launched via `dotnet run`. You must use **Visual Studio F5** (MSIX packaging required) to run the app.
@@ -53,7 +53,7 @@ The `Package.appxmanifest` contains a placeholder `Publisher` value. For local d
 1. **Fork** the repository and create a branch from `main`
 2. Follow the coding conventions below
 3. Ensure `dotnet build` completes with **0 errors**
-4. Run unit tests: `dotnet test src/Span/Span.Tests/Span.Tests.csproj -p:Platform=x64`
+4. Run unit tests: `dotnet test src/OrielFolder/OrielFolder.Tests/OrielFolder.Tests.csproj -p:Platform=x64`
 5. Submit a PR with a clear description of the changes
 
 ## Coding Conventions
@@ -68,16 +68,16 @@ The `Package.appxmanifest` contains a placeholder `Publisher` value. For local d
 ## Project Structure
 
 ```
-src/Span/
-├── Span/                    # Main application
+src/OrielFolder/
+├── OrielFolder/             # Main application
 │   ├── Models/              # Data models (IFileSystemItem, TabItem, etc.)
 │   ├── ViewModels/          # MVVM ViewModels
 │   ├── Views/               # XAML Views and Controls
 │   ├── Services/            # 40+ service classes
 │   ├── Helpers/             # Converters, utilities
 │   └── Assets/              # Icons and images
-├── Span.Tests/              # Unit tests (MSTest + Moq)
-└── Span.UITests/            # UI automation tests (FlaUI)
+├── OrielFolder.Tests/       # Unit tests (MSTest + Moq)
+└── OrielFolder.UITests/     # UI automation tests (FlaUI)
 ```
 
 ## License

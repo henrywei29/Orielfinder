@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot '..\src\Span\Span'
+$root = Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder'
 $header = @'
 #nullable enable
 using System;
@@ -11,14 +11,14 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Span.Models;
-using Span.ViewModels;
-using Span.Helpers;
-namespace Span.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
-namespace Span.Models {
+using OrielFolder.Models;
+using OrielFolder.ViewModels;
+using OrielFolder.Helpers;
+namespace OrielFolder.Helpers { public static class DebugLogger { public static void Log(string text) {} } }
+namespace OrielFolder.Models {
     public class FolderItem { public string Name = "", Path = ""; public DateTime DateModified; }
 }
-namespace Span.ViewModels {
+namespace OrielFolder.ViewModels {
     public class FileSystemViewModel { public string Name = "", Path = ""; public long SizeValue; public DateTime DateModifiedValue = DateTime.Today; }
     public class FolderViewModel : FileSystemViewModel {}
 }
@@ -36,7 +36,7 @@ $handler = [IO.File]::ReadAllText((Join-Path $root 'MainWindow.FileOperationHand
 $rootChoice = [regex]::Match($handler, '(?s)string rootPath(?:;| =).*?(?=\s*if \(string.IsNullOrEmpty\(rootPath\))').Value
 if (-not $rootChoice) { throw 'Cannot locate actual search root selection.' }
 $rootHost = @'
-namespace Span {
+namespace OrielFolder {
     public class Explorer {
         public string CurrentPath = @"D:\parent";
         public List<FolderViewModel> Columns = new();
@@ -73,17 +73,17 @@ $cases = @(
     @('野𠮷家店','野家店.txt',$true)
 )
 foreach($case in $cases) {
-    $query = [Span.Helpers.SearchQueryParser]::Parse($case[0])
-    $item = [Span.ViewModels.FileSystemViewModel]::new()
+    $query = [OrielFolder.Helpers.SearchQueryParser]::Parse($case[0])
+    $item = [OrielFolder.ViewModels.FileSystemViewModel]::new()
     $item.Name = $case[1]
-    $result = [Span.Helpers.SearchFilter]::Matches($query,$item)
+    $result = [OrielFolder.Helpers.SearchFilter]::Matches($query,$item)
     if ($result -ne $case[2]) { $failures.Add("query='$($case[0])', name='$($case[1])', expected=$($case[2]), actual=$result") }
     else { "PASS: name query '$($case[0])' against '$($case[1])'" }
 }
-$explorer = [Span.Explorer]::new()
-foreach($path in @('D:\parent','D:\parent\retained-child')) { $column=[Span.ViewModels.FolderViewModel]::new(); $column.Path=$path; $explorer.Columns.Add($column) }
-if ([Span.RootTest]::Resolve($explorer,$false) -ne 'D:\parent') { $failures.Add('Ordinary search searched the retained child instead of the current folder.') }
+$explorer = [OrielFolder.Explorer]::new()
+foreach($path in @('D:\parent','D:\parent\retained-child')) { $column=[OrielFolder.ViewModels.FolderViewModel]::new(); $column.Path=$path; $explorer.Columns.Add($column) }
+if ([OrielFolder.RootTest]::Resolve($explorer,$false) -ne 'D:\parent') { $failures.Add('Ordinary search searched the retained child instead of the current folder.') }
 else { 'PASS: ordinary search respects current folder with retained child columns' }
-if ([Span.RootTest]::Resolve($explorer,$true) -ne 'D:\parent') { throw 'Ctrl+Enter root search behavior changed.' }
+if ([OrielFolder.RootTest]::Resolve($explorer,$true) -ne 'D:\parent') { throw 'Ctrl+Enter root search behavior changed.' }
 'PASS: Ctrl+Enter still searches from the first column root'
 if ($failures.Count) { throw ($failures -join "`n") }

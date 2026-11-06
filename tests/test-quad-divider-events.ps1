@@ -1,5 +1,5 @@
 $ErrorActionPreference='Stop'
-$source=Get-Content (Join-Path $PSScriptRoot '..\src\Span\Span\MainWindow.WorkspaceLayout.cs') -Raw
+$source=Get-Content (Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\MainWindow.WorkspaceLayout.cs') -Raw
 $method=[regex]::Match($source,'(?sm)^        private void AddWorkspaceDivider\(.*?^        }').Value
 $fixture=@'
 #nullable enable annotations

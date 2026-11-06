@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
-$assets = Join-Path $PSScriptRoot 'src\Span\Span\Assets'
+$assets = Join-Path $PSScriptRoot 'src\OrielFolder\OrielFolder\Assets'
 function Write-Png([Drawing.Image]$Source, [string]$Path, [int]$Width, [int]$Height) {
     $bitmap = New-Object Drawing.Bitmap $Width, $Height
     $graphics = [Drawing.Graphics]::FromImage($bitmap)

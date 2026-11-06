@@ -1,4 +1,4 @@
-param([string]$SourcePath=(Join-Path $PSScriptRoot '..\src\Span\Span\Views\DetailsModeView.xaml.cs'))
+param([string]$SourcePath=(Join-Path $PSScriptRoot '..\src\OrielFolder\OrielFolder\Views\DetailsModeView.xaml.cs'))
 $ErrorActionPreference='Stop'
 $source=[IO.File]::ReadAllText($SourcePath)
 $method=[regex]::Match($source,'(?sm)^        private void OnDetailsSelectionChanged\(.*?^        }').Value
