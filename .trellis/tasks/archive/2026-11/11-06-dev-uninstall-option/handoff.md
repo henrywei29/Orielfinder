@@ -3,9 +3,10 @@
 ## Current State
 - **TASK_ID:** 11-06-dev-uninstall-option   - **Updated:** 2026-11-06 15:00 (local)
 - **Agent:** Claude Code (Trellis inline flow: `trellis-implement`/`trellis-check` agent types were not loadable in this session)
-- **Task & phase:** Dev uninstall option. Phase 2 implemented, checked and **runtime-verified** (level 4). Remaining:
-  user imports the backup in the re-registered Dev app (level 5), commit, Phase 3 finish/archive — all need the user.
-- **Git:** branch `rename/orielfolder`, HEAD 343da11, nothing staged/committed for this task.
+- **Task & phase:** Dev uninstall option. Implemented, checked, runtime-verified, **committed (`00bfa7e`) and archived**
+  at the user's request (2026-11-06). Open user-side step (not blocking): import the config backup
+  `D:\codex\OrielFolderDev\backups\OrielFolder-config-20261106-145141.json` in Dev and confirm Explorer opens folders.
+- **Git:** branch `rename/orielfolder`, commit `00bfa7e` (not pushed).
 
 ### Completed work
 - Planning: prd.md (D1-D3, R1-R10, acceptance), design.md, implement.md; user approved ("Approve plan").
@@ -84,3 +85,4 @@ User imports the backup in Dev (Settings → configuration backup → Import). T
 - 2026-11-06 [Claude Code] design.md + implement.md written; PRD requirements R1-R10 + acceptance; context manifests curated. Waiting for user approval of planning summary (no task.py start).
 - 2026-11-06 [Claude Code] Implemented steps 1-6; self-review found the elevated helper trusted user-writable plan paths -> hardened (derived layout, backup-root check). Tests: unit 1176/0/3, static 31+7 PASS, copy compile 0 errors. Runtime pending approval.
 - 2026-11-06 [Claude Code] User approved runtime test ("Run it now"). build-dev exit 0; start-dev PID 27360; user ran the flow; helper Ok, real stale overrides removed with .reg backups, preview-cache deleted, package removed (deployment log 14:52:28); outside-container check OK; start-dev re-registered (PID 18284). Found Claude-shell virtualisation pitfall.
+- 2026-11-06 [Claude Code] Committed as 00bfa7e (split from the window-drag task by hunk); archived at user request. Backup import still up to the user.
