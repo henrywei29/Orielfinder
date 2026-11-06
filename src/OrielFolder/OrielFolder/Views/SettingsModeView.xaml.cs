@@ -22,12 +22,8 @@ namespace OrielFolder.Views;
 /// </summary>
 public sealed partial class SettingsModeView : UserControl
 {
-    private static readonly string[] FontOptions =
-    [
-        "Segoe UI Variable", "Pretendard", "Arial", "Verdana", "Calibri",
-        "Cascadia Code", "Consolas", "Courier New",
-        "Malgun Gothic", "Microsoft YaHei UI", "Yu Gothic UI"
-    ];
+    // 字体选项统一来自 AppFontCatalog（ComboBox 项在构造函数里生成，避免 XAML 与代码两份列表不同步）
+    private static readonly string[] FontOptions = AppFontCatalog.Options.Select(o => o.Key).ToArray();
 
     private readonly ScrollViewer[] _sections;
     private readonly Grid[] _navItems;
@@ -56,6 +52,10 @@ public sealed partial class SettingsModeView : UserControl
     public SettingsModeView()
     {
         this.InitializeComponent();
+
+        FontCombo.Items.Clear();
+        foreach (var option in AppFontCatalog.Options)
+            FontCombo.Items.Add(new ComboBoxItem { Content = option.DisplayName });
 
         // Set version from Package manifest + auto-generated build date
         try
@@ -903,6 +903,9 @@ public sealed partial class SettingsModeView : UserControl
             AvailableText2.Text = _loc.Get("OpenSource_Available");
             FontsLabel.Text = _loc.Get("OpenSource_Fonts");
             BundledText.Text = _loc.Get("OpenSource_Bundled");
+            BundledTextInter.Text = _loc.Get("OpenSource_Bundled");
+            BundledTextGeist.Text = _loc.Get("OpenSource_Bundled");
+            BundledTextNotoSansSC.Text = _loc.Get("OpenSource_Bundled");
 
             // Browsing — Preview folder info (라벨/설명)
             PreviewFolderInfoLabel.Text = _loc.Get("Settings_PreviewFolderInfo");
