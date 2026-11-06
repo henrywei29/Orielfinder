@@ -21,6 +21,7 @@ file manager. `Span` is a **legacy name**, never the current application name.
 | [Build, Test & Verification](./build-test-verification.md) | Real build commands, test suites, what counts as verified |
 | [Git Workspace Safety](./git-workspace-safety.md) | Non-negotiable rules for the shared, heavily-modified working tree |
 | [Multi-Agent Handoff](./multi-agent-handoff.md) | Codex / Claude Code / Antigravity start + end-of-session protocol |
+| [Dev-only by default](./dev-release-boundary.md) | **User rule:** all changes stay Dev unless the user says "放进正式版本" or "输出exe" |
 
 ---
 
@@ -30,6 +31,8 @@ file manager. `Span` is a **legacy name**, never the current application name.
 - [ ] Follow [Multi-Agent Handoff → Start](./multi-agent-handoff.md#start-of-session-protocol):
       read the active task's `handoff.md`, the latest journal session, and Git state.
 - [ ] Confirm the previous writer has stopped (single-writer rule).
+- [ ] Read [Dev-only by default](./dev-release-boundary.md): no release identity, packaging, EXE/installer
+      output, signing or `main` changes unless the user's current message explicitly asks for it.
 - [ ] Read [Git Workspace Safety](./git-workspace-safety.md). No reset/clean/restore/stash/commit
       without explicit user approval.
 - [ ] Check [Rename & Migration Status](./rename-migration-status.md) before touching any
