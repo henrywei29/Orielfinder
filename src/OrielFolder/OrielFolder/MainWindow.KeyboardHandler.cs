@@ -1595,6 +1595,8 @@ namespace OrielFolder
         private void ToggleFullScreen()
         {
             _isFullScreen = !_isFullScreen;
+            // Own caption buttons are content (no system caption in full screen) → hide them and their regions.
+            AppCaptionButtons.Visibility = _isFullScreen ? Visibility.Collapsed : Visibility.Visible;
             if (_isFullScreen)
             {
                 this.AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
@@ -1603,6 +1605,7 @@ namespace OrielFolder
             {
                 this.AppWindow.SetPresenter(AppWindowPresenterKind.Default);
             }
+            QueueUpdateTitleBarRegions();
         }
 
         #endregion

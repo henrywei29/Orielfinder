@@ -55,7 +55,11 @@ public class StripeScrollProbe {
   Windows.UI.ViewManagement.AccessibilitySettings.Contrast=true;root.VisualChildren.Add(list);
   OrielFolder.Helpers.InlineTreeViewHelper.RefreshStripeTree(root);
   if(ReferenceEquals(row.Background,dark))throw new Exception("Contrast refresh retained colored stripes");
-  return "PASS: 10000 row callbacks use one system lookup/one unchanged background write; theme/contrast refresh preserved";
+  var home=new ListViewBase{XamlRoot=xaml};var card=new SelectorItem();var homePanel=new Panel();homePanel.Children.Add(new SelectorItem());homePanel.Children.Add(card);home.ItemsPanelRoot=homePanel;root.VisualChildren.Add(home);
+  Windows.UI.ViewManagement.AccessibilitySettings.Contrast=false;OrielFolder.Helpers.InlineTreeViewHelper.RefreshStripeTree(root);
+  if(card.Writes!=0)throw new Exception("Tree refresh striped a list that never used stripes (Home cards) "+card.Writes+" times");
+  if(!ReferenceEquals(row.Background,dark))throw new Exception("Tree refresh skipped a striped list");
+  return "PASS: 10000 row callbacks use one system lookup/one unchanged background write; theme/contrast refresh preserved; tree refresh only touches striped lists";
  }
 }
 '@

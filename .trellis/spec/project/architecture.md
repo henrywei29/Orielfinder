@@ -75,7 +75,9 @@ Defined in `src/OrielFolder/OrielFolder/Helpers/AppIdentity.cs` and `Package.app
   `ListaryWindowBridge`, `CrashReportingService` (Sentry), `LocalizationService` (+ `LocalizationData`).
 - `Helpers/` (~60) — converters, `DebugLogger`, `DispatcherHelper.SafeEnqueue`, `NativeMethods`,
   `NaturalStringComparer`, search parsing, `AppIdentity`, `AppSettings`, `LaunchArguments`,
-  `DevelopmentPackageActivation`.
+  `DevelopmentPackageActivation`, `CustomWindowFrame` + `WindowFrameGeometry` (own title-bar frame: no WinUI
+  extended title-bar mode, which caps window dragging; see frontend/layout-window-performance.md),
+  `HoverShadow` (Home card hover shadow).
 - `Models/` — `IFileSystemItem` → `DriveItem`/`FolderItem`/`FileItem`, `TabItem`, workspace DTOs,
   `PaneLayoutGeometry` (pure layout math, unit-tested from PowerShell via `Add-Type`).
 - `Assets/` — icons, fonts (Remix/Phosphor/Tabler/Pretendard), WebView2 assets (`Onboarding/`, `PdfViewer/` = pdf.js).

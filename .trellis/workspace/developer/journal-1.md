@@ -177,3 +177,187 @@ User-approved build-dev.ps1 + start-dev.ps1 on branch rename/orielfolder: build 
 
 - Exercise Settings/theme switch/Quick Look/dialogs manually
 - Decide push/merge of rename/orielfolder; handle release manifest identity
+
+
+## Session 6: [Claude Code] Dev uninstall option + folder-open repair
+<!-- trellis-session: v=2 fp=142c94f811864da4 -->
+
+**Date**: 2026-11-06
+**Task**: [Claude Code] Dev uninstall option + folder-open repair
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Repaired stale spanfinder.exe folder-open overrides (backup in D:\codex); planned (D1-D3) and implemented Settings > Advanced 'Uninstall OrielFolder Dev': config backup, elevated helper cleanup (stale folder-open, caches, Listary plugin), then package removal
+
+### Main Changes
+
+- Services/DevUninstall/*, Assets/DevUninstall/Uninstall-OrielFolderDev.ps1, SettingsModeView card + dialog flow, 16 strings x 10 languages
+- Spec: MSIX virtualisation + elevated helper pattern (architecture.md); PS 5.1-safe tests (build-test-verification.md)
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] [OK] unit 1176 passed / 0 failed / 3 skipped
+- [OK] [OK] test-dev-uninstall-script.ps1 31 PASS; test-stale-folder-open.ps1 7 PASS; compile of copy 0 errors
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Runtime verification with user approval (really uninstalls Dev), then commit on rename/orielfolder
+
+
+## Session 7: Dev uninstall: runtime verification
+<!-- trellis-session: v=2 fp=1fdd825da2c825bd -->
+
+**Date**: 2026-11-06
+**Task**: Dev uninstall: runtime verification
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Ran the Dev uninstall flow for real: cleanup Ok, real stale folder-open overrides removed with .reg backups, package removed, Dev re-registered. Found Claude-shell MSIX virtualisation pitfall.
+
+### Main Changes
+
+- handoff.md, prd.md acceptance ticks + correction, spec architecture.md (agent shells are virtualised)
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] build-dev.ps1 exit 0 (0 errors); start-dev OK x2; helper result Ok; outside-container WMI check: HKCU open keys absent, Folder open -> Explorer.exe; AppX log Remove succeeded 14:52:28
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User imports backup OrielFolder-config-20261106-145141.json; commit + Phase 3 on request
+
+
+## Session 8: Window drag stutter: measurements
+<!-- trellis-session: v=2 fp=b63730a3424da28d -->
+
+**Date**: 2026-11-06
+**Task**: Window drag stutter: measurements
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Measured window drag smoothness: Dev ~120 moves/s, Explorer ~313/s, release ~65-70/s on a 240 Hz panel; Mica not the cause (temporary Dev diagnostic, reverted).
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 3 drag recordings (read-only sampler); Mica-off diagnostic build + revert; build-dev exit 0 x2
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Optional: ETW trace or minimal WinUI 3 sample to confirm framework cap
+
+
+## Session 9: Window drag stutter: root cause + host alternatives
+<!-- trellis-session: v=2 fp=b6da359131a585ee -->
+
+**Date**: 2026-11-06
+**Task**: Window drag stutter: root cause + host alternatives
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Minimal WinUI 3 tests: extended title bar caps window moves at ~110-150/s (Mica and app code not the cause; manual move does not help). Own Win32 window hosting WinUI content via DesktopWindowXamlSource with Win32 HTCAPTION strip reaches ~466/s.
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] 5 recording rounds with test app in D:\codex (A-J, I2); no repo changes
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- Test XAML tabs inside the title area of a Win32 host before any OrielFolder change
+
+
+## Session 10: Window drag stutter: tabs-in-title Win32 host works
+<!-- trellis-session: v=2 fp=9e0c2c58cd913266 -->
+
+**Date**: 2026-11-06
+**Task**: Window drag stutter: tabs-in-title Win32 host works
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Win32 host + DesktopWindowXamlSource covering the title area, drag gaps via InputNonClientPointerSource caption regions: 443 moves/s (= plain window). Win32 HTTRANSPARENT approach does not drag.
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] Recording round 6 + hit-test probe; no repo changes
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User confirms T2 tab clicks; then Trellis planning for OrielFolder MainWindow host migration (Dev only)
+
+
+## Session 11: Own title-bar frame + Home card fixes
+<!-- trellis-session: v=2 fp=345f826b6ead6c73 -->
+
+**Date**: 2026-11-06
+**Task**: Own title-bar frame + Home card fixes
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Removed WinUI extended title-bar mode (drag cap ~120/s) in MainWindow and Quick Look: own frame (CustomWindowFrame), own caption buttons, snap layouts. User runtime check passed. Fixed pre-existing Home card frame (stripe refresh hit every list) and redesigned Home hover as soft shadow.
+
+### Main Changes
+
+- CustomWindowFrame/WindowFrameGeometry/CaptionButtons; MainWindow + QuickLook regions
+- InlineTreeViewHelper: RefreshStripeTree only re-stripes opted-in lists
+- HoverShadow + HomeModeView hover redesign
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] build-dev 0 errors; unit 1183 pass; titlebar + row-stripe static tests PASS via .NET harness (need PS7)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User decides commit and Trellis finish/archive

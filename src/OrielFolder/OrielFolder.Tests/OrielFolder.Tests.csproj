@@ -76,6 +76,7 @@
     <Compile Include="..\OrielFolder\Services\ArchiveReaderService.cs" Link="Sources\Services\ArchiveReaderService.cs" />
     <Compile Include="..\OrielFolder\Services\DevUninstall\StaleFolderOpenRule.cs" Link="Sources\Services\DevUninstall\StaleFolderOpenRule.cs" />
     <Compile Include="..\OrielFolder\Services\DevUninstall\DevUninstallPlan.cs" Link="Sources\Services\DevUninstall\DevUninstallPlan.cs" />
+    <Compile Include="..\OrielFolder\Helpers\WindowFrameGeometry.cs" Link="Sources\Helpers\WindowFrameGeometry.cs" />
     <Compile Include="..\OrielFolder\Helpers\ArchivePreviewResolver.cs" Link="Sources\Helpers\ArchivePreviewResolver.cs" />
     <Compile Include="..\OrielFolder\Helpers\FontScaleService.cs" Link="Sources\Helpers\FontScaleService.cs" />
     <!-- Services - file operations (pure C#) -->

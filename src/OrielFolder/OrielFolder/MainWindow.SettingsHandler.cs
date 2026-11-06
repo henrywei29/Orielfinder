@@ -79,45 +79,27 @@ namespace OrielFolder
                 : theme == "light" || (theme == "system" && App.Current.RequestedTheme == ApplicationTheme.Light);
             Services.IconService.Current?.UpdateTheme(isLightForIcons);
 
-            // 캡션 버튼 색상
-            var titleBar = this.AppWindow.TitleBar;
-
+            // 캡션 버튼 색상 — own caption buttons (no extended title bar; Trellis 11-06-window-drag-stutter)
+            Views.Controls.CaptionPalette captionPalette;
             if (isCustom)
             {
                 var cap = GetCaptionColors(theme);
-                titleBar.ButtonForegroundColor = cap.fg;
-                titleBar.ButtonHoverForegroundColor = cap.hoverFg;
-                titleBar.ButtonHoverBackgroundColor = cap.hoverBg;
-                titleBar.ButtonPressedForegroundColor = cap.pressedFg;
-                titleBar.ButtonPressedBackgroundColor = cap.pressedBg;
-                titleBar.ButtonInactiveForegroundColor = cap.inactiveFg;
+                captionPalette = new(cap.fg, cap.hoverFg, cap.hoverBg, cap.pressedFg, cap.pressedBg, cap.inactiveFg);
             }
             else
             {
                 bool isLight = theme == "light" ||
                                (theme == "system" && App.Current.RequestedTheme == ApplicationTheme.Light);
 
-                if (isLight)
-                {
-                    titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(255, 26, 26, 26);
-                    titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(255, 0, 0, 0);
-                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(20, 0, 0, 0);
-                    titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(255, 0, 0, 0);
-                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(40, 0, 0, 0);
-                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(255, 140, 140, 140);
-                }
-                else
-                {
-                    titleBar.ButtonForegroundColor = Windows.UI.Color.FromArgb(255, 255, 255, 255);
-                    titleBar.ButtonHoverForegroundColor = Windows.UI.Color.FromArgb(255, 255, 255, 255);
-                    titleBar.ButtonHoverBackgroundColor = Windows.UI.Color.FromArgb(15, 255, 255, 255);
-                    titleBar.ButtonPressedForegroundColor = Windows.UI.Color.FromArgb(255, 255, 255, 255);
-                    titleBar.ButtonPressedBackgroundColor = Windows.UI.Color.FromArgb(20, 255, 255, 255);
-                    titleBar.ButtonInactiveForegroundColor = Windows.UI.Color.FromArgb(255, 120, 120, 120);
-                }
+                captionPalette = isLight
+                    ? new(Windows.UI.Color.FromArgb(255, 26, 26, 26), Windows.UI.Color.FromArgb(255, 0, 0, 0),
+                          Windows.UI.Color.FromArgb(20, 0, 0, 0), Windows.UI.Color.FromArgb(255, 0, 0, 0),
+                          Windows.UI.Color.FromArgb(40, 0, 0, 0), Windows.UI.Color.FromArgb(255, 140, 140, 140))
+                    : new(Windows.UI.Color.FromArgb(255, 255, 255, 255), Windows.UI.Color.FromArgb(255, 255, 255, 255),
+                          Windows.UI.Color.FromArgb(15, 255, 255, 255), Windows.UI.Color.FromArgb(255, 255, 255, 255),
+                          Windows.UI.Color.FromArgb(20, 255, 255, 255), Windows.UI.Color.FromArgb(255, 120, 120, 120));
             }
-            titleBar.ButtonBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
-            titleBar.ButtonInactiveBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            AppCaptionButtons.SetPalette(captionPalette);
 
             // DWM 윈도우 보더 색상 → 테마 배경색에 맞춰 최대화 시 흰색 라인 방지
             UpdateDwmBorderColor(theme, isCustom);

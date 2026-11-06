@@ -8,6 +8,17 @@
     xmlns:helpers="using:OrielFolder.Helpers"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <!-- Lightweight styling: the GridViewItem template draws its hover/pressed border and keyboard focus ring with
+             {ThemeResource GridViewItemCornerRadius} (4 by default), which left square-ish corners around the 10px
+             cards. Match the cards' CornerRadius="10" here (home page only; keyboard focus ring). -->
+        <CornerRadius x:Key="GridViewItemCornerRadius">10</CornerRadius>
+        <!-- The cards draw their own hover feedback (soft shadow); hide the container's square hover/pressed chrome. -->
+        <SolidColorBrush x:Key="GridViewItemBackgroundPointerOver" Color="Transparent"/>
+        <SolidColorBrush x:Key="GridViewItemBackgroundPressed" Color="Transparent"/>
+        <SolidColorBrush x:Key="GridViewItemPointerOverBorderBrush" Color="Transparent"/>
+    </UserControl.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                   Background="{ThemeResource OrielFolderContentBrush}">
         <StackPanel x:Name="RootPanel" Padding="32,24" Spacing="24">
@@ -24,6 +35,7 @@
                           ItemsSource="{x:Bind LocalDrives, Mode=OneWay}"
                           IsItemClickEnabled="True"
                           ItemClick="OnDriveItemClick"
+                          Padding="20" Margin="-20"
                           SelectionMode="None">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -38,44 +50,48 @@
                     </GridView.ItemContainerStyle>
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="models:DriveItem">
-                            <Grid Width="220" Height="80"
-                                  Padding="16,12"
-                                  CornerRadius="10"
-                                  Background="{ThemeResource OrielFolderCardBrush}"
-                                  BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
-                                  BorderThickness="1"
-                                  RightTapped="OnDriveRightTapped">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <Grid>
+                                <!-- Hover shadow (Helpers/HoverShadow.cs): sits behind the card, same size and corner radius. -->
+                                <Border helpers:HoverShadow.CornerRadius="10"/>
+                                <Grid Width="220" Height="80"
+                                      Padding="16,12"
+                                      CornerRadius="10"
+                                      Background="{ThemeResource OrielFolderCardBrush}"
+                                      BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
+                                      BorderThickness="1"
+                                      RightTapped="OnDriveRightTapped">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Drive Icon -->
-                                <FontIcon Grid.Column="0"
-                                          FontFamily="{StaticResource RemixIcons}"
-                                          Glyph="{x:Bind IconGlyph}"
-                                          FontSize="28"
-                                          Foreground="{ThemeResource OrielFolderAccentBrush}"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                                    <!-- Drive Icon -->
+                                    <FontIcon Grid.Column="0"
+                                              FontFamily="{StaticResource RemixIcons}"
+                                              Glyph="{x:Bind IconGlyph}"
+                                              FontSize="28"
+                                              Foreground="{ThemeResource OrielFolderAccentBrush}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0"/>
 
-                                <!-- Drive Info -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock Text="{x:Bind Name}"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"/>
-                                    <ProgressBar Value="{x:Bind UsagePercent}"
-                                                 Maximum="100"
-                                                 Height="4"
-                                                 CornerRadius="2"/>
-                                    <TextBlock Text="{x:Bind SizeDescription}"
-                                               FontSize="11"
-                                               Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"/>
-                                </StackPanel>
+                                    <!-- Drive Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                        <TextBlock Text="{x:Bind Name}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"/>
+                                        <ProgressBar Value="{x:Bind UsagePercent}"
+                                                     Maximum="100"
+                                                     Height="4"
+                                                     CornerRadius="2"/>
+                                        <TextBlock Text="{x:Bind SizeDescription}"
+                                                   FontSize="11"
+                                                   Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"/>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -95,6 +111,7 @@
                           ItemsSource="{x:Bind CloudDrivesList, Mode=OneWay}"
                           IsItemClickEnabled="True"
                           ItemClick="OnDriveItemClick"
+                          Padding="20" Margin="-20"
                           SelectionMode="None">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -109,41 +126,45 @@
                     </GridView.ItemContainerStyle>
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="models:DriveItem">
-                            <Grid Width="220" Height="80"
-                                  Padding="16,12"
-                                  CornerRadius="10"
-                                  Background="{ThemeResource OrielFolderCardBrush}"
-                                  BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
-                                  BorderThickness="1"
-                                  RightTapped="OnDriveRightTapped">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <Grid>
+                                <!-- Hover shadow (Helpers/HoverShadow.cs): sits behind the card, same size and corner radius. -->
+                                <Border helpers:HoverShadow.CornerRadius="10"/>
+                                <Grid Width="220" Height="80"
+                                      Padding="16,12"
+                                      CornerRadius="10"
+                                      Background="{ThemeResource OrielFolderCardBrush}"
+                                      BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
+                                      BorderThickness="1"
+                                      RightTapped="OnDriveRightTapped">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Cloud Icon -->
-                                <FontIcon Grid.Column="0"
-                                          FontFamily="{StaticResource RemixIcons}"
-                                          Glyph="{x:Bind IconGlyph}"
-                                          FontSize="28"
-                                          Foreground="{ThemeResource OrielFolderAccentBrush}"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                                    <!-- Cloud Icon -->
+                                    <FontIcon Grid.Column="0"
+                                              FontFamily="{StaticResource RemixIcons}"
+                                              Glyph="{x:Bind IconGlyph}"
+                                              FontSize="28"
+                                              Foreground="{ThemeResource OrielFolderAccentBrush}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0"/>
 
-                                <!-- Cloud Drive Info -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock Text="{x:Bind Name}"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"/>
-                                    <TextBlock Text="{x:Bind SizeDescription}"
-                                               FontSize="11"
-                                               Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"
-                                               Visibility="{x:Bind helpers:VisibilityHelper.FromNonEmpty(SizeDescription)}"/>
-                                </StackPanel>
+                                    <!-- Cloud Drive Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                        <TextBlock Text="{x:Bind Name}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"/>
+                                        <TextBlock Text="{x:Bind SizeDescription}"
+                                                   FontSize="11"
+                                                   Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"
+                                                   Visibility="{x:Bind helpers:VisibilityHelper.FromNonEmpty(SizeDescription)}"/>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -163,6 +184,7 @@
                           ItemsSource="{x:Bind NetworkDrivesList, Mode=OneWay}"
                           IsItemClickEnabled="True"
                           ItemClick="OnDriveItemClick"
+                          Padding="20" Margin="-20"
                           SelectionMode="None">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -177,41 +199,45 @@
                     </GridView.ItemContainerStyle>
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="models:DriveItem">
-                            <Grid Width="220" Height="80"
-                                  Padding="16,12"
-                                  CornerRadius="10"
-                                  Background="{ThemeResource OrielFolderCardBrush}"
-                                  BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
-                                  BorderThickness="1"
-                                  RightTapped="OnDriveRightTapped">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
+                            <Grid>
+                                <!-- Hover shadow (Helpers/HoverShadow.cs): sits behind the card, same size and corner radius. -->
+                                <Border helpers:HoverShadow.CornerRadius="10"/>
+                                <Grid Width="220" Height="80"
+                                      Padding="16,12"
+                                      CornerRadius="10"
+                                      Background="{ThemeResource OrielFolderCardBrush}"
+                                      BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
+                                      BorderThickness="1"
+                                      RightTapped="OnDriveRightTapped">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                                <!-- Network Icon -->
-                                <FontIcon Grid.Column="0"
-                                          FontFamily="{StaticResource RemixIcons}"
-                                          Glyph="{x:Bind IconGlyph}"
-                                          FontSize="28"
-                                          Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
-                                          VerticalAlignment="Center"
-                                          Margin="0,0,12,0"/>
+                                    <!-- Network Icon -->
+                                    <FontIcon Grid.Column="0"
+                                              FontFamily="{StaticResource RemixIcons}"
+                                              Glyph="{x:Bind IconGlyph}"
+                                              FontSize="28"
+                                              Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,12,0"/>
 
-                                <!-- Network Drive Info -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
-                                    <TextBlock Text="{x:Bind Name}"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"/>
-                                    <TextBlock Text="{x:Bind SizeDescription}"
-                                               FontSize="11"
-                                               Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"
-                                               Visibility="{x:Bind helpers:VisibilityHelper.FromNonEmpty(SizeDescription)}"/>
-                                </StackPanel>
+                                    <!-- Network Drive Info -->
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                                        <TextBlock Text="{x:Bind Name}"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"/>
+                                        <TextBlock Text="{x:Bind SizeDescription}"
+                                                   FontSize="11"
+                                                   Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"
+                                                   Visibility="{x:Bind helpers:VisibilityHelper.FromNonEmpty(SizeDescription)}"/>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                         </DataTemplate>
                     </GridView.ItemTemplate>
@@ -231,6 +257,7 @@
                           IsItemClickEnabled="True"
                           ItemClick="OnFavoriteItemClick"
                           ContainerContentChanging="OnFavoriteContainerContentChanging"
+                          Padding="20" Margin="-20"
                           SelectionMode="None">
                     <GridView.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -245,32 +272,36 @@
                     </GridView.ItemContainerStyle>
                     <GridView.ItemTemplate>
                         <DataTemplate x:DataType="models:FavoriteItem">
-                            <Grid Width="120" Height="80"
-                                  Padding="12"
-                                  CornerRadius="10"
-                                  Background="{ThemeResource OrielFolderCardBrush}"
-                                  BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
-                                  BorderThickness="1"
-                                  RightTapped="OnFavoriteRightTapped">
-                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
-                                    <Grid HorizontalAlignment="Center">
-                                        <!-- desktop.ini 커스텀 아이콘 (Issue #39 a) -->
-                                        <Image Source="{x:Bind CustomIcon, Mode=OneWay}"
-                                               Visibility="{x:Bind CustomIconVisibility, Mode=OneWay}"
-                                               Width="24" Height="24"/>
-                                        <!-- 기본 글리프 -->
-                                        <FontIcon FontFamily="{StaticResource RemixIcons}"
-                                                  Glyph="{x:Bind IconGlyph}"
-                                                  Foreground="{x:Bind IconBrush}"
-                                                  FontSize="24"
-                                                  Visibility="{x:Bind GlyphVisibility, Mode=OneWay}"/>
-                                    </Grid>
-                                    <TextBlock Text="{x:Bind Name}"
-                                               FontSize="12"
-                                               TextAlignment="Center"
-                                               TextTrimming="CharacterEllipsis"
-                                               MaxLines="1"/>
-                                </StackPanel>
+                            <Grid>
+                                <!-- Hover shadow (Helpers/HoverShadow.cs): sits behind the card, same size and corner radius. -->
+                                <Border helpers:HoverShadow.CornerRadius="10"/>
+                                <Grid Width="120" Height="80"
+                                      Padding="12"
+                                      CornerRadius="10"
+                                      Background="{ThemeResource OrielFolderCardBrush}"
+                                      BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
+                                      BorderThickness="1"
+                                      RightTapped="OnFavoriteRightTapped">
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+                                        <Grid HorizontalAlignment="Center">
+                                            <!-- desktop.ini 커스텀 아이콘 (Issue #39 a) -->
+                                            <Image Source="{x:Bind CustomIcon, Mode=OneWay}"
+                                                   Visibility="{x:Bind CustomIconVisibility, Mode=OneWay}"
+                                                   Width="24" Height="24"/>
+                                            <!-- 기본 글리프 -->
+                                            <FontIcon FontFamily="{StaticResource RemixIcons}"
+                                                      Glyph="{x:Bind IconGlyph}"
+                                                      Foreground="{x:Bind IconBrush}"
+                                                      FontSize="24"
+                                                      Visibility="{x:Bind GlyphVisibility, Mode=OneWay}"/>
+                                        </Grid>
+                                        <TextBlock Text="{x:Bind Name}"
+                                                   FontSize="12"
+                                                   TextAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxLines="1"/>
+                                    </StackPanel>
+                                </Grid>
                             </Grid>
                         </DataTemplate>
                     </GridView.ItemTemplate>

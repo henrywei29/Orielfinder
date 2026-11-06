@@ -73,6 +73,7 @@ namespace OrielFolder
 
         private IntPtr _hwnd;
         private SUBCLASSPROC? _subclassProc; // prevent GC collection
+        private Helpers.CustomWindowFrame? _windowFrame; // own title-bar frame (no extended title-bar mode)
         private DispatcherTimer? _deviceChangeDebounceTimer;
         private DispatcherTimer? _drivePollingTimer;
         private HashSet<char> _lastKnownDriveLetters = new();
@@ -420,7 +421,6 @@ namespace OrielFolder
         private bool _titleBarUpdateQueued;
         private Windows.Graphics.RectInt32[]? _lastTitleBarRects;
         private Windows.Graphics.RectInt32? _lastTitleBarCaptionRect;
-        private double _lastRightPaddingWidth = -1;
         private MainWindow? _windowDragGhostTarget;
         private int _windowDragFrameCount;
 
@@ -577,11 +577,17 @@ namespace OrielFolder
                 }
             };
 
-            // TitleBar
-            ExtendsContentIntoTitleBar = true;
-            // Own client-relative regions explicitly; window position does not change them.
-            SetTitleBar(null);
+            // TitleBar: own frame instead of WinUI's extended title-bar mode, which caps window dragging at ~120
+            // moves/s (Trellis 11-06-window-drag-stutter). The caption is removed by CustomWindowFrame (attached once
+            // _hwnd is known) and every non-client region is set explicitly in UpdateTitleBarRegions.
             AppTitleBar.SizeChanged += (_, _) => QueueUpdateTitleBarRegions();
+            AppCaptionButtons.SizeChanged += (_, _) => QueueUpdateTitleBarRegions();
+            AppWindow.Changed += (_, e) =>
+            {
+                if (e.DidPresenterChange || e.DidSizeChange) AppCaptionButtons.SetMaximized(IsZoomed(_hwnd));
+            };
+            this.Activated += (_, e) =>
+                AppCaptionButtons.SetActive(e.WindowActivationState != WindowActivationState.Deactivated);
             AppWindow.Changed += (_, args) =>
             {
                 if (args.DidSizeChange || args.DidPresenterChange || args.DidVisibilityChange)
@@ -659,6 +665,8 @@ namespace OrielFolder
 
             // Get HWND early (needed by child views and context menu service)
             _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            _windowFrame = new Helpers.CustomWindowFrame(_hwnd);
+            AppCaptionButtons.Attach(InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id));
 
             // Increment app launch count for Store rating prompt
             _settings.AppLaunchCount++;
@@ -1425,12 +1433,10 @@ namespace OrielFolder
                 // STEP 0.2: NonClientInputSource 영역 즉시 초기화 (WinUI teardown 중 stowed exception 방지)
                 try
                 {
-                    if (ExtendsContentIntoTitleBar)
-                    {
-                        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
-                        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, Array.Empty<Windows.Graphics.RectInt32>());
-                        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Caption, Array.Empty<Windows.Graphics.RectInt32>());
-                    }
+                    AppCaptionButtons.Detach();
+                    var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+                    foreach (var kind in TitleBarRegionKinds)
+                        nonClientInputSrc.SetRegionRects(kind, Array.Empty<Windows.Graphics.RectInt32>());
                 }
                 catch { }
 
@@ -1607,6 +1613,8 @@ namespace OrielFolder
                     {
                         RemoveWindowSubclass(_hwnd, _subclassProc, IntPtr.Zero);
                     }
+                    _windowFrame?.Dispose();
+                    _windowFrame = null;
                     if (_deviceChangeDebounceTimer != null)
                     {
                         _deviceChangeDebounceTimer.Stop();

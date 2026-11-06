@@ -117,20 +117,26 @@ namespace OrielFolder.Views
             // Mica backdrop
             SystemBackdrop = new Microsoft.UI.Xaml.Media.MicaBackdrop();
 
-            // Custom title bar
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(QuickLookTitleBar);
+            // Own title-bar frame instead of WinUI's extended title-bar mode, which caps window dragging at ~120
+            // moves/s (Trellis 11-06-window-drag-stutter). Caption/Close regions are set in UpdateTitleBarRegions.
+            _windowFrame = new Helpers.CustomWindowFrame(WinRT.Interop.WindowNative.GetWindowHandle(this));
+            QuickLookCaptionButtons.ShowMinimize = false;
+            QuickLookCaptionButtons.ShowMaximize = false;
+            QuickLookCaptionButtons.Attach(Microsoft.UI.Input.InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id));
+            QuickLookTitleBar.SizeChanged += (_, _) => UpdateTitleBarRegions();
+            QuickLookCaptionButtons.SizeChanged += (_, _) => UpdateTitleBarRegions();
+            RootGrid.Loaded += (_, _) =>
+            {
+                UpdateTitleBarRegions();
+                if (RootGrid.XamlRoot != null) RootGrid.XamlRoot.Changed += (_, _) => UpdateTitleBarRegions(); // DPI change
+            };
+            this.Activated += (_, e) =>
+                QuickLookCaptionButtons.SetActive(e.WindowActivationState != WindowActivationState.Deactivated);
 
             this.Title = LocalizationService.L("QuickLook_Title");
             TitleText.Text = LocalizationService.L("QuickLook_Title");
 
             var appWindow = this.AppWindow;
-
-            // Caption button padding
-            var titleBar = appWindow.TitleBar;
-            titleBar.ExtendsContentIntoTitleBar = true;
-            titleBar.ButtonBackgroundColor = Colors.Transparent;
-            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
 
             // 메인 창의 80% 크기로 열기 (이후 파일 이동 시에도 사이즈 유지, 닫았다 열면 다시 80%)
             var (w, h) = GetContentModeSize();
@@ -142,20 +148,42 @@ namespace OrielFolder.Views
                 presenter.IsMinimizable = false;
                 presenter.IsMaximizable = false;
             }
-
-            // Update right padding for caption buttons
-            UpdateTitleBarPadding();
         }
 
-        private void UpdateTitleBarPadding()
+        private Helpers.CustomWindowFrame? _windowFrame;
+        private Windows.Graphics.RectInt32[]? _lastTitleBarRegions;
+
+        /// <summary>
+        /// Caption = title bar minus the own close button; Close = that button (system closes the window).
+        /// Physical pixels via RasterizationScale; only re-sent when the geometry changed.
+        /// </summary>
+        private void UpdateTitleBarRegions()
         {
             try
             {
-                // Reserve space for min/max/close caption buttons (approx 138px on standard DPI)
-                var scale = (this.Content as FrameworkElement)?.XamlRoot?.RasterizationScale ?? 1.0;
-                TitleRightPadding.Width = new GridLength(138);
+                if (QuickLookTitleBar.XamlRoot == null || QuickLookTitleBar.ActualWidth <= 0) return;
+                double scale = QuickLookTitleBar.XamlRoot.RasterizationScale;
+                var t = QuickLookTitleBar.TransformToVisual(null).TransformBounds(
+                    new Windows.Foundation.Rect(0, 0, QuickLookTitleBar.ActualWidth, QuickLookTitleBar.ActualHeight));
+                double captionWidth = Math.Max(0, t.Width - QuickLookCaptionButtons.ActualWidth);
+                var caption = new Windows.Graphics.RectInt32((int)Math.Round(t.X * scale), (int)Math.Round(t.Y * scale),
+                    (int)Math.Round(captionWidth * scale), (int)Math.Round(t.Height * scale));
+                var close = default(Windows.Graphics.RectInt32);
+                foreach (var (kind, rect) in QuickLookCaptionButtons.GetRegionRects(scale))
+                    if (kind == Microsoft.UI.Input.NonClientRegionKind.Close) close = rect;
+                var regions = new[] { caption, close };
+                if (_lastTitleBarRegions != null && System.Linq.Enumerable.SequenceEqual(_lastTitleBarRegions, regions)) return;
+
+                var source = Microsoft.UI.Input.InputNonClientPointerSource.GetForWindowId(this.AppWindow.Id);
+                source.SetRegionRects(Microsoft.UI.Input.NonClientRegionKind.Caption, new[] { caption });
+                source.SetRegionRects(Microsoft.UI.Input.NonClientRegionKind.Close,
+                    close.Width > 0 ? new[] { close } : Array.Empty<Windows.Graphics.RectInt32>());
+                _lastTitleBarRegions = regions;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.Log($"[QuickLook] UpdateTitleBarRegions: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -246,11 +274,14 @@ namespace OrielFolder.Views
                     root.RequestedTheme = targetTheme;
                 }
 
-                // 캡션 버튼 색상도 테마에 맞게 조정
-                var titleBar = this.AppWindow.TitleBar;
+                // 캡션 버튼 색상도 테마에 맞게 조정 (own close button)
                 bool isLight = theme == "light" || theme == "solarized-light"
                     || (theme == "system" && App.Current.RequestedTheme == ApplicationTheme.Light);
-                titleBar.ButtonForegroundColor = isLight ? Colors.Black : Colors.White;
+                QuickLookCaptionButtons.SetPalette(isLight
+                    ? new Views.Controls.CaptionPalette(Colors.Black, Colors.Black, Windows.UI.Color.FromArgb(20, 0, 0, 0),
+                        Colors.Black, Windows.UI.Color.FromArgb(40, 0, 0, 0), Windows.UI.Color.FromArgb(255, 140, 140, 140))
+                    : new Views.Controls.CaptionPalette(Colors.White, Colors.White, Windows.UI.Color.FromArgb(15, 255, 255, 255),
+                        Colors.White, Windows.UI.Color.FromArgb(20, 255, 255, 255), Windows.UI.Color.FromArgb(255, 120, 120, 120)));
             }
             catch (Exception ex)
             {
@@ -1086,6 +1117,9 @@ namespace OrielFolder.Views
             ViewModel.PropertyChanged -= OnInfoOnlyPropertyChanged;
             ContentPreviewArea.SizeChanged -= OnContentPreviewAreaSizeChanged;
             this.Content.PreviewKeyDown -= OnContentPreviewKeyDown;
+            QuickLookCaptionButtons.Detach();
+            _windowFrame?.Dispose();
+            _windowFrame = null;
 
             // 지연 생성 네이티브 컨트롤 정리
             try { _markdownWebView?.Close(); } catch { }

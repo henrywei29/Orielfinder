@@ -11,9 +11,14 @@ internal static class InlineTreeViewHelper
     private static readonly Brush Clear = new SolidColorBrush(Microsoft.UI.Colors.Transparent);
     private sealed record StripePalette(Brush Odd);
     private static readonly ConditionalWeakTable<XamlRoot, StripePalette> Palettes = new();
+    // Lists that use stripes (they call ApplyStripe from ContainerContentChanging). RefreshStripeTree only touches
+    // these; it used to stripe every ListViewBase under the pane host, e.g. the Home page card GridViews.
+    private static readonly ConditionalWeakTable<ListViewBase, object> StripedLists = new();
+    private static readonly object StripedMarker = new();
 
     internal static void ApplyStripe(ListViewBase list, SelectorItem container, int index)
     {
+        StripedLists.AddOrUpdate(list, StripedMarker);
         var palette = list.XamlRoot is { } xaml ? Palettes.GetValue(xaml, CreatePalette) : null;
         Brush brush = index % 2 == 1 ? palette?.Odd ?? Clear : Clear;
         if (!ReferenceEquals(container.Background, brush)) container.Background = brush;
@@ -59,7 +64,11 @@ internal static class InlineTreeViewHelper
 
     private static void RefreshStripeTreeCore(DependencyObject root)
     {
-        if (root is ListViewBase list) { RefreshStripesCore(list); return; }
+        if (root is ListViewBase list)
+        {
+            if (StripedLists.TryGetValue(list, out _)) RefreshStripesCore(list);
+            return;
+        }
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
             RefreshStripeTreeCore(VisualTreeHelper.GetChild(root, i));
     }

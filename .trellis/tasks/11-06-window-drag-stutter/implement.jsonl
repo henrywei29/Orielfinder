@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/layout-window-performance.md", "reason": "Title bar regions + window drag rules"}
+{"file": ".trellis/spec/project/build-test-verification.md", "reason": "Build/test commands, PS 5.1 limits"}
+{"file": ".trellis/tasks/11-06-window-drag-stutter/research/drag-measurement-20261106.md", "reason": "Measurements and verified recipe"}
+{"file": ".trellis/spec/project/dev-release-boundary.md", "reason": "Dev-only rule"}

@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 5
+- **Total Sessions**: 11
 - **Last Active**: 2026-11-06
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~179 | Active |
+| `journal-1.md` | ~363 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,12 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 11 | 2026-11-06 | Own title-bar frame + Home card fixes | - | `rename/orielfolder` |
+| 10 | 2026-11-06 | Window drag stutter: tabs-in-title Win32 host works | - | `rename/orielfolder` |
+| 9 | 2026-11-06 | Window drag stutter: root cause + host alternatives | - | `rename/orielfolder` |
+| 8 | 2026-11-06 | Window drag stutter: measurements | - | `rename/orielfolder` |
+| 7 | 2026-11-06 | Dev uninstall: runtime verification | - | `rename/orielfolder` |
+| 6 | 2026-11-06 | [Claude Code] Dev uninstall option + folder-open repair | - | `rename/orielfolder` |
 | 5 | 2026-11-06 | [Claude Code] Runtime check of renamed OrielFolder Dev build | - | `rename/orielfolder` |
 | 4 | 2026-11-06 | [Claude Code] Commit Span->OrielFolder rename on branch rename/orielfolder; finish task | - | `rename/orielfolder` |
 | 3 | 2026-11-06 | [Claude Code] Continue Span->OrielFolder rename (takeover from Antigravity) | - | `main` |

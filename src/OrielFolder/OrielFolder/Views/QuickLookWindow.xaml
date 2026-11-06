@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:helpers="using:OrielFolder.Helpers"
-    xmlns:views="using:OrielFolder.Views">
+    xmlns:views="using:OrielFolder.Views"
+    xmlns:viewcontrols="using:OrielFolder.Views.Controls">
 
     <Grid x:Name="RootGrid" Background="{ThemeResource OrielFolderContentBrush}">
         <Grid.Resources>
@@ -33,7 +34,7 @@
               Background="{ThemeResource OrielFolderChromeBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition x:Name="TitleRightPadding" Width="0"/>
+                <ColumnDefinition x:Name="TitleRightPadding" Width="Auto"/> <!-- own close button (CustomWindowFrame) -->
             </Grid.ColumnDefinitions>
             <Rectangle Grid.ColumnSpan="2" Height="1" VerticalAlignment="Bottom"
                        Fill="{ThemeResource OrielFolderBorderSubtleBrush}"/>
@@ -44,6 +45,8 @@
                            Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
                            VerticalAlignment="Center"/>
             </StackPanel>
+            <!-- Own close button (no extended title-bar mode; Caption/Close regions set in UpdateTitleBarRegions) -->
+            <viewcontrols:CaptionButtons x:Name="QuickLookCaptionButtons" Grid.Column="1"/>
         </Grid>
 
         <!-- ============================================ -->

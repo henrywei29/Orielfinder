@@ -1508,16 +1508,15 @@ namespace OrielFolder
             try
             {
                 if (_isClosed || TabScrollViewer == null || TabRepeater == null) return;
-                if (!ExtendsContentIntoTitleBar) return;
                 if (AppTitleBar?.XamlRoot == null) return;
 
                 double scale = AppTitleBar.XamlRoot.RasterizationScale;
 
-                // Keep the full visual title-bar height draggable without XAML's automatic
-                // title-bar region management. Leave the system caption buttons untouched.
+                // Own frame (no extended title-bar mode, see CustomWindowFrame): the full visual title-bar height is
+                // draggable except our own caption buttons, which get their own Minimize/Maximize/Close regions.
                 var titleBounds = AppTitleBar.TransformToVisual(null).TransformBounds(
                     new Windows.Foundation.Rect(0, 0, AppTitleBar.ActualWidth, AppTitleBar.ActualHeight));
-                titleBounds.Width = Math.Max(0, titleBounds.Width - AppWindow.TitleBar.RightInset / scale);
+                titleBounds.Width = Math.Max(0, titleBounds.Width - AppCaptionButtons.ActualWidth);
                 if (titleBounds.Width <= 0 || titleBounds.Height <= 0) return;
                 var captionRect = ToRectInt32(titleBounds, scale);
                 if (!_lastTitleBarCaptionRect.HasValue || !_lastTitleBarCaptionRect.Value.Equals(captionRect))
@@ -1527,13 +1526,7 @@ namespace OrielFolder
                     _lastTitleBarCaptionRect = captionRect;
                 }
 
-                // 캡션 버튼 영역 확보
-                double rightPad = this.AppWindow.TitleBar.RightInset / scale;
-                if (Math.Abs(rightPad - _lastRightPaddingWidth) > 0.5)
-                {
-                    RightPaddingColumn.Width = new GridLength(rightPad);
-                    _lastRightPaddingWidth = rightPad;
-                }
+                UpdateCaptionButtonRegions(scale);
 
                 // ScrollViewer 뷰포트 경계 (클리핑용)
                 GeneralTransform svTransform = TabScrollViewer.TransformToVisual(null);
@@ -1580,6 +1573,42 @@ namespace OrielFolder
             catch { /* Layout not ready yet */ }
         }
 
+        /// <summary>Every non-client region kind this window sets (cleared together on close).</summary>
+        private static readonly NonClientRegionKind[] TitleBarRegionKinds =
+        {
+            NonClientRegionKind.Caption, NonClientRegionKind.Passthrough,
+            NonClientRegionKind.Minimize, NonClientRegionKind.Maximize, NonClientRegionKind.Close
+        };
+
+        private Windows.Graphics.RectInt32[]? _lastCaptionButtonRects;
+
+        /// <summary>
+        /// Minimize/Maximize/Close regions for the own caption buttons (system performs the actions) and the
+        /// maximize rect for CustomWindowFrame's HTMAXBUTTON answer (Windows 11 snap layouts). Hidden buttons
+        /// (F11 full screen) clear their regions. Only re-sent when the geometry changed.
+        /// </summary>
+        private void UpdateCaptionButtonRegions(double scale)
+        {
+            var rects = AppCaptionButtons.Visibility == Visibility.Visible
+                ? AppCaptionButtons.GetRegionRects(scale)
+                : Array.Empty<(NonClientRegionKind Kind, Windows.Graphics.RectInt32 Rect)>();
+            var byKind = new Windows.Graphics.RectInt32[3];
+            foreach (var (kind, rect) in rects)
+                byKind[kind == NonClientRegionKind.Minimize ? 0 : kind == NonClientRegionKind.Maximize ? 1 : 2] = rect;
+            if (_lastCaptionButtonRects != null && _lastCaptionButtonRects.SequenceEqual(byKind)) return;
+
+            var source = InputNonClientPointerSource.GetForWindowId(AppWindow.Id);
+            var kinds = new[] { NonClientRegionKind.Minimize, NonClientRegionKind.Maximize, NonClientRegionKind.Close };
+            for (int i = 0; i < kinds.Length; i++)
+            {
+                source.SetRegionRects(kinds[i], byKind[i].Width > 0
+                    ? new[] { byKind[i] }
+                    : Array.Empty<Windows.Graphics.RectInt32>());
+            }
+            if (_windowFrame != null) _windowFrame.MaximizeButtonRect = byKind[1];
+            _lastCaptionButtonRects = byKind;
+        }
+
         /// <summary>
         /// 탭 드래그 중 타이틀바 전체(캡션 버튼 제외)를 Passthrough로 확장.
         /// IXP 레이어가 드래그를 캡션 드래그(창 이동)로 인식하는 것을 방지한다.
@@ -1591,19 +1620,17 @@ namespace OrielFolder
             try
             {
                 if (_isClosed || AppTitleBar?.XamlRoot == null) return;
-                if (!ExtendsContentIntoTitleBar) return;
 
                 double scale = AppTitleBar.XamlRoot.RasterizationScale;
 
-                // AppTitleBar 전체 영역을 Passthrough로 (캡션 버튼 영역은 RightInset으로 제외)
+                // AppTitleBar 전체 영역을 Passthrough로 (own caption buttons excluded; they keep their regions)
                 GeneralTransform transform = AppTitleBar.TransformToVisual(null);
                 var bounds = transform.TransformBounds(
                     new Windows.Foundation.Rect(0, 0,
                         AppTitleBar.ActualWidth, AppTitleBar.ActualHeight));
 
                 // 캡션 버튼 영역(최소화/최대화/닫기) 폭을 제외
-                double rightInset = this.AppWindow.TitleBar.RightInset / scale;
-                double passthroughWidth = bounds.Width - rightInset;
+                double passthroughWidth = bounds.Width - AppCaptionButtons.ActualWidth;
                 if (passthroughWidth <= 0) return;
 
                 var rect = new Windows.Graphics.RectInt32(
