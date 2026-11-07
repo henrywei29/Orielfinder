@@ -48,6 +48,7 @@ class Program
         var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
+            Helpers.PerfTrace.Mark("Startup.MainReady");
 #if ORIEL_STANDALONE
             try { Helpers.AppSettings.MigrateLegacyData(); }
             catch (Exception ex) { Helpers.DebugLogger.Log($"[Migration] Legacy data import incomplete: {ex.GetType().Name}"); }
@@ -57,6 +58,7 @@ class Program
                 var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(
                     Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+                Helpers.PerfTrace.Mark("Startup.XamlStarted");
                 new App();
             });
         }

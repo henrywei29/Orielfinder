@@ -11,6 +11,11 @@ namespace OrielFolder.Services
     {
         List<FavoriteItem> GetDefaultFavorites();
         List<FavoriteItem> LoadFavorites();
+        /// <summary>LoadFavorites on a background STA thread (Quick Access is Shell COM).</summary>
+        System.Threading.Tasks.Task<List<FavoriteItem>> LoadFavoritesAsync();
+        /// <summary>Favorites from the last Quick Access read, or null when there is no snapshot.</summary>
+        List<FavoriteItem>? LoadSnapshot();
+        void SaveSnapshot(IReadOnlyList<Helpers.FavoriteSnapshotEntry> entries);
         void SaveFavorites(List<FavoriteItem> favorites);
         List<FavoriteItem> AddFavorite(string path, List<FavoriteItem> existing);
         List<FavoriteItem> RemoveFavorite(string path, List<FavoriteItem> existing);

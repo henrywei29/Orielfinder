@@ -39,6 +39,68 @@ namespace OrielFolder.Services
             return GetDefaultFavorites();
         }
 
+        private const string SnapshotFileName = "favorites-snapshot.json";
+
+        public System.Threading.Tasks.Task<List<FavoriteItem>> LoadFavoritesAsync()
+        {
+            var tcs = new System.Threading.Tasks.TaskCompletionSource<List<FavoriteItem>>(
+                System.Threading.Tasks.TaskCreationOptions.RunContinuationsAsynchronously);
+            var thread = new System.Threading.Thread(() =>
+            {
+                try { tcs.TrySetResult(LoadFavorites()); }
+                catch (Exception ex) { tcs.TrySetException(ex); }
+            })
+            { IsBackground = true, Name = "Favorites.QuickAccess" };
+            // Shell.Application is apartment-threaded.
+            thread.SetApartmentState(System.Threading.ApartmentState.STA);
+            thread.Start();
+            return tcs.Task;
+        }
+
+        private static string? GetSnapshotPath()
+        {
+            try { return Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, SnapshotFileName); }
+            catch { return null; }
+        }
+
+        public List<FavoriteItem>? LoadSnapshot()
+        {
+            try
+            {
+                var file = GetSnapshotPath();
+                if (file == null || !File.Exists(file)) return null;
+                var entries = Helpers.FavoritesSnapshot.Deserialize(File.ReadAllText(file));
+                if (entries == null) return null;
+                var result = new List<FavoriteItem>(entries.Count);
+                int order = 0;
+                foreach (var e in entries)
+                {
+                    var (glyph, color) = GetIconForPath(e.Path);
+                    result.Add(new FavoriteItem { Name = e.Name, Path = e.Path, IconGlyph = glyph, IconColor = color, Order = order++ });
+                }
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.Log($"[FavoritesService] Snapshot read failed: {ex.Message}");
+                return null;
+            }
+        }
+
+        public void SaveSnapshot(IReadOnlyList<Helpers.FavoriteSnapshotEntry> entries)
+        {
+            try
+            {
+                var file = GetSnapshotPath();
+                if (file == null) return;
+                File.WriteAllText(file, Helpers.FavoritesSnapshot.Serialize(entries));
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.Log($"[FavoritesService] Snapshot write failed: {ex.Message}");
+            }
+        }
+
         public List<FavoriteItem> GetDefaultFavorites()
         {
             var favorites = new List<FavoriteItem>();

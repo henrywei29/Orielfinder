@@ -486,7 +486,9 @@ namespace OrielFolder
 
         public MainWindow()
         {
+            var perfCtor = Helpers.PerfTrace.Now();
             this.InitializeComponent();
+            Helpers.PerfTrace.Span("Startup.MainWindow.InitializeComponent", perfCtor);
 
             // FontScaleService 싱글톤은 App.xaml 에 <helpers:FontScaleService x:Key="FontScale"/>
             // 로 선언되어 XAML 파서가 Application.Resources 에 등록함. XAML {StaticResource FontScale}
@@ -505,7 +507,9 @@ namespace OrielFolder
             RightPaneContainer.AddHandler(UIElement.PointerPressedEvent,
                 new Microsoft.UI.Xaml.Input.PointerEventHandler(OnRightPanePointerPressed), true);
 
+            var perfVm = Helpers.PerfTrace.Now();
             ViewModel = App.Current.Services.GetRequiredService<MainViewModel>();
+            Helpers.PerfTrace.Span("Startup.MainViewModel.Ctor", perfVm);
             _contextMenuService = App.Current.Services.GetRequiredService<Services.ContextMenuService>();
             _loc = App.Current.Services.GetRequiredService<Services.LocalizationService>();
             _settings = App.Current.Services.GetRequiredService<Services.SettingsService>();
@@ -648,7 +652,6 @@ namespace OrielFolder
             ListView.ViewModel = ViewModel.Explorer;
             IconView.ViewModel = ViewModel.Explorer;
             HomeView.MainViewModel = ViewModel;
-            SettingsView.BackRequested += (s, e) => CloseCurrentSettingsTab();
             LogView.BackRequested += (s, e) => CloseCurrentActionLogTab();
 
             // AddressBarControl에 PathSegments/CurrentPath 바인딩
@@ -834,11 +837,15 @@ namespace OrielFolder
             }
 
             // Initialize preview panels
+            var perfPreview = Helpers.PerfTrace.Now();
             InitializePreviewPanels();
+            Helpers.PerfTrace.Span("Startup.MainWindow.InitializePreviewPanels", perfPreview);
 
             // Apply saved settings
             ApplyTheme(_settings.Theme);
+            var perfFont = Helpers.PerfTrace.Now();
             ApplyFontFamily(_settings.FontFamily);
+            Helpers.PerfTrace.Span("Startup.MainWindow.ApplyFontFamily", perfFont);
             ApplyDensity(_settings.Density);
             ApplyIconFontScale(_settings.IconFontScale);
             _settings.SettingChanged += OnSettingChanged;
@@ -857,6 +864,7 @@ namespace OrielFolder
             {
                 rootElement.Loaded += (s, e) =>
                 {
+                    Helpers.PerfTrace.Mark("Startup.MainWindow.Loaded");
                     if (_pendingTearOff != null)
                     {
                         // ── Tear-off mode: load single tab from DTO, skip session restore ──
@@ -960,23 +968,51 @@ namespace OrielFolder
                     if (!_isTearOffWindow && _settings.RememberWindowPosition)
                     {
                         RestoreWindowPlacement();
+
+                        // Uncloak as soon as one frame with the laid-out content has been rendered.
+                        // This used to wait for a Low-priority dispatcher slot, which a cold start that
+                        // opens a folder keeps busy for ~1 s (folder loading, row realization), so the
+                        // window stayed invisible long after its content was ready.
+                        var revealGate = new Helpers.StartupRevealGate();
+                        void Uncloak(string trigger)
+                        {
+                            if (_isClosed) return;
+                            if (_settings.RememberWindowPosition)
+                                RestoreWindowPlacement();
+
+                            // Uncloak — window is now at the correct size
+                            int cloakOff = 0;
+                            Helpers.NativeMethods.DwmSetWindowAttribute(
+                                _hwnd, Helpers.NativeMethods.DWMWA_CLOAK, ref cloakOff, sizeof(int));
+                            Helpers.PerfTrace.Mark($"Startup.Uncloaked ({trigger})");
+                        }
+
+                        // Rendering is raised before each frame: the 2nd callback means the 1st frame
+                        // after Loaded (the restored session) has been presented.
+                        EventHandler<object>? onRendering = null;
+                        onRendering = (_, _) =>
+                        {
+                            if (!revealGate.OnFrame()) return;
+                            Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
+                            Uncloak("frame");
+                        };
+                        Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += onRendering;
+
+                        // Fallback (unchanged behavior): idle dispatcher slot.
                         DispatcherQueue.TryEnqueue(
                             Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
                             () =>
                             {
-                                if (!_isClosed && _settings.RememberWindowPosition)
-                                    RestoreWindowPlacement();
-
-                                // Uncloak — window is now at the correct size
-                                int cloakOff = 0;
-                                Helpers.NativeMethods.DwmSetWindowAttribute(
-                                    _hwnd, Helpers.NativeMethods.DWMWA_CLOAK, ref cloakOff, sizeof(int));
+                                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
+                                if (revealGate.TryRevealNow()) Uncloak("idle");
                             });
                     }
 
                     // ── Normal startup: restore session tabs ──
+                    var perfTabs = Helpers.PerfTrace.Now();
                     RestorePreviewState();
                     ViewModel.LoadTabsFromSettings();
+                    Helpers.PerfTrace.Span("Startup.LoadTabsFromSettings", perfTabs);
 
                     if (ViewModel.IsSplitViewEnabled)
                     {
@@ -1074,6 +1110,7 @@ namespace OrielFolder
                     // 시작 인자까지 소비했다. 그 사이 도착해 보관된 리다이렉트를 처리하게 한다.
                     // App 쪽 재생은 DispatcherQueue에 넣으므로 이 Loaded 처리가 끝난 뒤에 실행된다.
                     ((App)Application.Current).OnMainWindowStartupComplete();
+                    Helpers.PerfTrace.Mark("Startup.StartupComplete");
 
                     // ── Populate Favorites Tree and observe changes ──
                     ApplyFavoritesTreeMode(_settings.ShowFavoritesTree);
@@ -2959,7 +2996,9 @@ namespace OrielFolder
             ListTabsHost.Visibility = mode == ViewMode.List ? Visibility.Visible : Visibility.Collapsed;
             IconTabsHost.Visibility = Helpers.ViewModeExtensions.IsIconMode(mode) ? Visibility.Visible : Visibility.Collapsed;
             HomeView.Visibility = mode == ViewMode.Home ? Visibility.Visible : Visibility.Collapsed;
-            SettingsView.Visibility = mode == ViewMode.Settings ? Visibility.Visible : Visibility.Collapsed;
+            if (mode == ViewMode.Settings) EnsureSettingsView();
+            if (SettingsView != null)
+                SettingsView.Visibility = mode == ViewMode.Settings ? Visibility.Visible : Visibility.Collapsed;
             LogView.Visibility = mode == ViewMode.ActionLog ? Visibility.Visible : Visibility.Collapsed;
             RecycleBinView.Visibility = mode == ViewMode.RecycleBin ? Visibility.Visible : Visibility.Collapsed;
             if (mode == ViewMode.RecycleBin)
@@ -2967,7 +3006,7 @@ namespace OrielFolder
                 SetSpecialModeAddressBar(ViewMode.RecycleBin);
                 _ = LoadRecycleBinViewAsync();
             }
-            if (mode == ViewMode.Settings)
+            if (mode == ViewMode.Settings && SettingsView != null)
             {
                 SettingsView.RefreshSettings();
                 // Settings가 Visible이 된 직후 → 절대값 기반이므로 항상 정확
@@ -4927,6 +4966,7 @@ namespace OrielFolder
         /// </summary>
         private void OnMillerContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
+            if (!args.InRecycleQueue && args.Phase == 0) Helpers.PerfTrace.FirstRow("Miller");
             // 긴급 임시 가드: STATUS_STOWED_EXCEPTION 차단
             // 컨테이너 unload race / unloaded folder VM 접근 / stale dict race 등
             // ContainerContentChanging 처리 도중 발생 가능한 모든 throw를 흡수.

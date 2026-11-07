@@ -26,7 +26,9 @@ namespace OrielFolder
 
         public App()
         {
+            var perfCtor = Helpers.PerfTrace.Now();
             this.InitializeComponent();
+            Helpers.PerfTrace.Span("Startup.App.InitializeComponent", perfCtor);
             ApplySystemAccentColor();
 
             // FontScale 싱글톤은 App.xaml 의 <helpers:FontScaleService x:Key="FontScale"/> 로
@@ -75,6 +77,7 @@ namespace OrielFolder
 
             // Single instance: 기존 인스턴스로 리다이렉트된 활성화 이벤트 수신
             AppInstance.GetCurrent().Activated += OnAppActivated;
+            Helpers.PerfTrace.Span("Startup.App.Ctor", perfCtor);
         }
 
         /// <summary>
@@ -537,6 +540,7 @@ namespace OrielFolder
 
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            Helpers.PerfTrace.Mark("Startup.OnLaunched");
             try
             {
                 // Apply saved language before creating windows
@@ -548,7 +552,9 @@ namespace OrielFolder
                 loc.Language = savedLang;
 
                 var iconService = Services.GetRequiredService<Services.IconService>();
+                var perfIcons = Helpers.PerfTrace.Now();
                 await iconService.LoadAsync();
+                Helpers.PerfTrace.Span("Startup.IconService.LoadAsync", perfIcons);
 
                 // 앱 시작 시 테마에 맞게 아이콘 색상 보정 적용
                 var savedTheme = Services.GetRequiredService<Services.SettingsService>().Theme;
@@ -629,9 +635,15 @@ namespace OrielFolder
                     return;
                 }
 
+                var perfWindow = Helpers.PerfTrace.Now();
                 m_window = new MainWindow();
+                Helpers.PerfTrace.Span("Startup.MainWindow.Ctor", perfWindow);
                 RegisterWindow(m_window);
+                var perfActivate = Helpers.PerfTrace.Now();
                 m_window.Activate();
+                Helpers.PerfTrace.Span("Startup.MainWindow.Activate", perfActivate);
+                Helpers.PerfTrace.Mark("Startup.WindowActivated");
+                Helpers.PerfTrace.StartUiStallMonitor(m_window.DispatcherQueue);
 
                 // 안전장치: 첫 창의 Loaded가 예외로 끝나 시작 완료 신호가 오지 않아도, 보관된 활성화가
                 // 영영 처리되지 않는 일은 없게 한다(기본 파일 관리자 사용자는 폴더 열기 전체가 막힌다).

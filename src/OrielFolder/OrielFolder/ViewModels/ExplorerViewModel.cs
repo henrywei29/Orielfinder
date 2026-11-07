@@ -860,7 +860,9 @@ namespace OrielFolder.ViewModels
                 SelectedFile = null;
 
                 // ── Phase 3: 모든 폴더 내용을 병렬 로딩 (UI 행 해소) ──
+                var perfPhase3 = Helpers.PerfTrace.Now();
                 await Task.WhenAll(columnVms.Select(vm => vm.EnsureChildrenLoadedAsync()));
+                Helpers.PerfTrace.Span("Nav.ToPath.LoadColumns", perfPhase3, $"columns={columnVms.Length} path='{path}'");
 
                 // ── Phase 4: SelectedChild를 실제 Children 인스턴스로 재매칭 ──
                 // Phase 2에서 설정한 SelectedChild는 Phase 1에서 만든 임시 인스턴스.

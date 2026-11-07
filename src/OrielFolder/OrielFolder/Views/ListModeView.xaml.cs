@@ -93,6 +93,11 @@ namespace OrielFolder.Views
         public ListModeView()
         {
             this.InitializeComponent();
+            // [Perf] FolderLoad.FirstRow: first row realized after a folder load. Registered ahead of
+            // OnContainerContentChanging (XAML), which marks the args handled and stops later handlers.
+            ListGridView.ContainerContentChanging -= OnContainerContentChanging;
+            ListGridView.ContainerContentChanging += (_, a) => { if (!a.InRecycleQueue && a.Phase == 0) Helpers.PerfTrace.FirstRow("List"); };
+            ListGridView.ContainerContentChanging += OnContainerContentChanging;
             RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (_, _) =>
             {
                 if (Visibility == Visibility.Visible && _pendingListRefresh && _isLoaded && !_isCleanedUp)

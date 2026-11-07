@@ -601,6 +601,9 @@ namespace OrielFolder.ViewModels
 
             _isLoaded = true;
             IsLoading = true;
+            var perfLoad = Helpers.PerfTrace.Now();
+            long perfCacheMs = -1;
+            bool perfFromCache = false;
 
             try { _cts?.Cancel(); } catch (ObjectDisposedException) { }
             _cts = new System.Threading.CancellationTokenSource();
@@ -624,6 +627,8 @@ namespace OrielFolder.ViewModels
                 // Cache freshness reads directory metadata; slow disks/shares must not block input.
                 var cached = folderCache == null ? null
                     : await Task.Run(() => folderCache.TryGet(folderPath, showHidden), token);
+                perfCacheMs = Helpers.PerfTrace.ElapsedMs(perfLoad);
+                perfFromCache = cached != null;
                 Helpers.DebugLogger.Log($"[EnsureChildrenLoaded] path='{folderPath}', cached={cached != null}, isArchive={Helpers.ArchivePathHelper.IsArchivePath(folderPath)}, isRemote={FileSystemRouter.IsRemotePath(folderPath)}");
                 if (cached != null)
                 {
@@ -670,6 +675,7 @@ namespace OrielFolder.ViewModels
             {
                 if (!token.IsCancellationRequested)
                 {
+                    Helpers.PerfTrace.FolderLoaded(perfLoad, perfCacheMs, perfFromCache, Children.Count, _folderModel.Path);
                     IsLoading = false;
                     IsEmpty = Children.Count == 0 && !HasError;
 

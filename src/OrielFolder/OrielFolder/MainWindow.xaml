@@ -1254,7 +1254,9 @@
                                                 Visibility="Collapsed"/>
 
                             <!-- Settings View (Left only) -->
+                            <!-- x:Load=False: built on first use by EnsureSettingsView() (~250 ms of startup otherwise) -->
                             <views:SettingsModeView x:Name="SettingsView"
+                                                    x:Load="False"
                                                     Visibility="Collapsed"/>
 
                             <!-- Action Log View (Left only) -->

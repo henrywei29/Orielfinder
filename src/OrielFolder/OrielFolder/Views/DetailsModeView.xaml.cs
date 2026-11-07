@@ -121,6 +121,12 @@ namespace OrielFolder.Views
             }
 
             this.InitializeComponent();
+
+            // [Perf] FolderLoad.FirstRow: first row realized after a folder load. Registered ahead of
+            // OnContainerContentChanging (XAML), which marks the args handled and stops later handlers.
+            DetailsListView.ContainerContentChanging -= OnContainerContentChanging;
+            DetailsListView.ContainerContentChanging += (_, a) => { if (!a.InRecycleQueue && a.Phase == 0) Helpers.PerfTrace.FirstRow("Details"); };
+            DetailsListView.ContainerContentChanging += OnContainerContentChanging;
             InitializeDetailsColumns();
             RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (_, _) =>
             {

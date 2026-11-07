@@ -932,6 +932,41 @@ namespace OrielFolder
         }
 
         /// <summary>
+        /// The embedded Settings page is declared with x:Load="False" so it is not built during
+        /// startup. This realizes it on first use and gives it what the startup path used to give it
+        /// (Back handler, the user's font — the tree walk in ApplyFontFamily could not reach it).
+        /// </summary>
+        private Views.SettingsModeView? EnsureSettingsView()
+        {
+            if (SettingsView != null || _isClosed) return SettingsView;
+            var perf = Helpers.PerfTrace.Now();
+            (this.Content as FrameworkElement)?.FindName(nameof(SettingsView));
+            if (SettingsView == null) return null;
+
+            SettingsView.BackRequested += (s, e) => CloseCurrentSettingsTab();
+            try
+            {
+                var font = new FontFamily(ResolveFontSpec(_settings.FontFamily));
+                ApplyFontToVisualTree(SettingsView, font);
+                // Children of templated controls appear only after the first layout.
+                SettingsView.Loaded += OnSettingsViewFirstLoaded;
+            }
+            catch (Exception ex) { Helpers.DebugLogger.Log($"[MainWindow] Settings font apply failed: {ex.Message}"); }
+            Helpers.PerfTrace.Span("SettingsView.Realize", perf);
+            return SettingsView;
+        }
+
+        private void OnSettingsViewFirstLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement view) return;
+            view.Loaded -= OnSettingsViewFirstLoaded;
+            if (_isClosed) return;
+            var stats = new FontApplyStats();
+            ApplyFontToVisualTree(view, new FontFamily(ResolveFontSpec(_settings.FontFamily)), stats);
+            Helpers.DebugLogger.Log($"[Font] Settings page realized: applied={stats.Applied} protected={stats.Protected}");
+        }
+
+        /// <summary>
         /// 폰트 패밀리를 모든 뷰에 적용한다.
         /// 번들 폰트는 앱 내 경로로 참조, 그 외는 시스템 폰트명 사용.
         /// 사용자가 어떤 폰트를 선택하든 UI 언어에 맞는 CJK fallback이 자동 추가됨.
@@ -1108,7 +1143,7 @@ namespace OrielFolder
             ApplyIconFontScaleToGlobalUI(newLevel);
 
             // Settings page — Collapsed 상태에선 VisualTree 순회 불가하므로 Visible일 때만 적용
-            if (SettingsView.Visibility == Visibility.Visible)
+            if (SettingsView?.Visibility == Visibility.Visible)
                 SettingsView.ApplyIconFontScale(newLevel);
 
             // Home page — 동일하게 Visible일 때만 적용
