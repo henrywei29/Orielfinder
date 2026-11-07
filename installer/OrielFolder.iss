@@ -7,7 +7,7 @@
 [Setup]
 AppId=OrielFolder.Setup
 AppName=OrielFolder
-AppVersion=1.0.2
+AppVersion=1.0.3
 AppPublisher=OrielFolder
 DefaultDirName={commonpf64}\OrielFolder Setup
 DisableDirPage=yes
@@ -18,7 +18,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 UsePreviousAppDir=no
 MinVersion=10.0.19041
 OutputDir={#Output}
-OutputBaseFilename=OrielFolder-1.0.2-x64-Setup
+OutputBaseFilename=OrielFolder-1.0.3-x64-Setup
 SetupIconFile={#Payload}\OrielFolder.ico
 Uninstallable=no
 CreateUninstallRegKey=no

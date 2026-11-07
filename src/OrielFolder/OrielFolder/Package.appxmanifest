@@ -12,7 +12,7 @@
   <Identity
     Name="OrielFolder.Desktop"
     Publisher="CN=OrielFolder"
-    Version="1.0.2.0" />
+    Version="1.0.3.0" />
 
   <mp:PhoneIdentity PhoneProductId="f4cb9699-7aad-40fc-b187-e4b74c90f072" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
