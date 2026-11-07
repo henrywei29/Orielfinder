@@ -41,6 +41,8 @@ namespace OrielFolder.Helpers
         /// <summary>Called when a view realizes a row; logs once per armed load.</summary>
         public static void FirstRow(string view)
         {
+            s_winRows++; // rows realized (phase 0) inside the current frame-watch window
+
             var start = System.Threading.Interlocked.Exchange(ref s_pendingFirstRow, 0);
             if (start != 0) DebugLogger.Log($"[Perf] FolderLoad.FirstRow {ElapsedMs(start)}ms view={view} @{SinceProcessStartMs}ms");
         }
@@ -80,6 +82,68 @@ namespace OrielFolder.Helpers
             })
             { IsBackground = true, Name = "PerfTrace.UiStallMonitor" };
             thread.Start();
+        }
+
+        // Debug-only frame watch: while armed, every frame of 50 ms or more is logged as
+        // [Perf] FrameGap with the GC pause and Gen2 count inside it, and the window ends with a
+        // [Perf] FrameWindow summary. Watching subscribes CompositionTarget.Rendering, which keeps
+        // frames coming, so it is armed only for a short window (new tab from a redirect).
+        private static long s_watchUntil;
+        private static long s_lastFrame;
+        private static bool s_frameHooked;
+        private static TimeSpan s_lastPause;
+        private static int s_lastGen2, s_lastGen0;
+        private static long s_winGapSum, s_winGc, s_winGen2, s_winFrames, s_winMax;
+        private static int s_winRows;
+
+        [Conditional("DEBUG")]
+        public static void WatchFrames(int durationMs)
+        {
+            FlushWatch();
+            s_watchUntil = Now() + durationMs * Stopwatch.Frequency / 1000;
+            s_lastFrame = Now();
+            s_lastPause = GC.GetTotalPauseDuration();
+            s_lastGen2 = GC.CollectionCount(2); s_lastGen0 = GC.CollectionCount(0);
+            s_winGapSum = s_winGc = s_winGen2 = s_winFrames = s_winMax = 0;
+            s_winRows = 0;
+            if (!s_frameHooked)
+            {
+                s_frameHooked = true;
+                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += OnWatchFrame;
+            }
+        }
+
+        private static void FlushWatch()
+        {
+            if (s_winFrames == 0) return;
+            DebugLogger.Log($"[Perf] FrameWindow frames={s_winFrames} slowSum={s_winGapSum}ms maxGap={s_winMax}ms gcPause={s_winGc}ms gen2={s_winGen2} rowsRealized={s_winRows} ws={Environment.WorkingSet / 1048576}MB heapMB={GC.GetTotalMemory(false) / 1048576}");
+            s_winFrames = 0;
+        }
+
+        private static void OnWatchFrame(object? sender, object e)
+        {
+            var now = Now();
+            if (now > s_watchUntil)
+            {
+                FlushWatch();
+                s_frameHooked = false;
+                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= OnWatchFrame;
+                return;
+            }
+            var gap = (now - s_lastFrame) * 1000 / Stopwatch.Frequency;
+            s_lastFrame = now;
+            s_winFrames++;
+            var pause = GC.GetTotalPauseDuration();
+            int g2 = GC.CollectionCount(2), g0 = GC.CollectionCount(0);
+            var gcMs = (long)(pause - s_lastPause).TotalMilliseconds;
+            s_winGc += gcMs; s_winGen2 += g2 - s_lastGen2;
+            if (gap >= 50)
+            {
+                s_winGapSum += gap;
+                if (gap > s_winMax) s_winMax = gap;
+                DebugLogger.Log($"[Perf] FrameGap {gap}ms ending @{SinceProcessStartMs}ms gcPause={gcMs}ms gen2={g2 - s_lastGen2} gen0={g0 - s_lastGen0} heapMB={GC.GetTotalMemory(false) / 1048576}");
+            }
+            s_lastPause = pause; s_lastGen2 = g2; s_lastGen0 = g0;
         }
 
         public static void Mark(string name)

@@ -48,6 +48,9 @@ class Program
         var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
+            // Only the primary instance renders lists; a redirecting process exits right away.
+            long ballast = Helpers.GcBallast.Install();
+            Helpers.DebugLogger.Log($"[Perf] GcBallast {ballast / (1024 * 1024)}MB");
             Helpers.PerfTrace.Mark("Startup.MainReady");
 #if ORIEL_STANDALONE
             try { Helpers.AppSettings.MigrateLegacyData(); }

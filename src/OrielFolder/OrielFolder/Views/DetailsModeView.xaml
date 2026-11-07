@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:OrielFolder.ViewModels"
+    xmlns:helpers="using:OrielFolder.Helpers"
     mc:Ignorable="d">
 
     <UserControl.Resources>
@@ -172,7 +173,7 @@
                             <FontIcon Glyph="{x:Bind TreeChevron, Mode=OneWay}" FontSize="9" Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"/>
                         </Button>
                         <!-- Icon / Thumbnail / Custom Folder Icon -->
-                        <Grid Grid.Column="1" Width="{Binding IconFontSize, Source={StaticResource FontScale}}" Height="{Binding IconFontSize, Source={StaticResource FontScale}}"
+                        <Grid Grid.Column="1" Width="{x:Bind helpers:FontScaleService.Instance.IconFontSize, Mode=OneWay}" Height="{x:Bind helpers:FontScaleService.Instance.IconFontSize, Mode=OneWay}"
                               HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Image Source="{x:Bind ThumbnailSource, Mode=OneWay}" Stretch="UniformToFill"
                                    Visibility="{x:Bind vm:FileSystemViewModel.ShowIfTrue(HasThumbnail), Mode=OneWay}"/>
@@ -181,10 +182,10 @@
                             <FontIcon FontFamily="{StaticResource RemixIcons}"
                                       Glyph="{x:Bind IconGlyph, Mode=OneWay}"
                                       Foreground="{x:Bind IconBrush, Mode=OneWay}"
-                                      FontSize="{Binding IconFontSize, Source={StaticResource FontScale}}"
+                                      FontSize="{x:Bind helpers:FontScaleService.Instance.IconFontSize, Mode=OneWay}"
                                       Visibility="{x:Bind vm:FileSystemViewModel.ShowIfFalseAndFalse(HasThumbnail, HasCustomIcon), Mode=OneWay}"/>
                             <!-- Issue #58: folder colour tag (top-left, overlay - no layout impact) -->
-                            <Border Visibility="{x:Bind vm:FileSystemViewModel.ShowIfTrue(ShowTagDot), Mode=OneWay}"
+                            <Border x:Name="TagDot" x:Load="False"
                                     HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-3,-3,0,0"
                                     Width="9" Height="9" CornerRadius="4.5"
                                     Background="{x:Bind TagBrush, Mode=OneWay}"
@@ -196,7 +197,7 @@
                                    Text="{x:Bind TruncatedDisplayName, Mode=OneWay}"
                                    VerticalAlignment="Center"
                                    TextTrimming="CharacterEllipsis"
-                                   FontSize="{Binding ItemFontSize, Source={StaticResource FontScale}}"
+                                   FontSize="{x:Bind helpers:FontScaleService.Instance.ItemFontSize, Mode=OneWay}"
                                    Padding="6,0"
                                    Visibility="{x:Bind vm:FileSystemViewModel.NotRenaming(IsRenaming), Mode=OneWay}"/>
                         <!-- Rename TextBox (visible during rename) -->
@@ -205,7 +206,7 @@
                                  Visibility="{x:Bind IsRenaming, Mode=OneWay}"
                                  Margin="0" VerticalAlignment="Center"
                                  VerticalContentAlignment="Center"
-                                 Padding="6,0" MinHeight="0" FontSize="{Binding ItemFontSize, Source={StaticResource FontScale}}"
+                                 Padding="6,0" MinHeight="0" FontSize="{x:Bind helpers:FontScaleService.Instance.ItemFontSize, Mode=OneWay}"
                                  LostFocus="OnRenameTextBoxLostFocus"
                                  KeyDown="OnRenameTextBoxKeyDown"/>
 
@@ -228,7 +229,7 @@
                                 <Border Width="9" Height="9" CornerRadius="4.5" Margin="0,0,6,0" Opacity="0" IsHitTestVisible="False"/>
                                 <TextBlock Grid.Column="1" Text="{x:Bind TagText, Mode=OneWay}" TextTrimming="CharacterEllipsis"
                                            ToolTipService.ToolTip="{x:Bind TagText, Mode=OneWay}"
-                                           FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"/>
+                                           FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"/>
                             </Grid>
                         </Border>
 
@@ -237,7 +238,7 @@
                             <TextBlock x:Phase="1" Text="{x:Bind LocationPath, Mode=OneWay}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
-                                       FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"
+                                       FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"
                                        Foreground="{ThemeResource OrielFolderTextSecondaryBrush}"
                                        Padding="6,0"/>
                         </Border>
@@ -247,7 +248,7 @@
                             <TextBlock x:Phase="1" Text="{x:Bind DateModified, Mode=OneWay}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
-                                       FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"
+                                       FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"
                                        Padding="6,0"/>
                         </Border>
                         <!-- Type -->
@@ -255,7 +256,7 @@
                             <TextBlock x:Phase="1" Text="{x:Bind FileType, Mode=OneWay}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
-                                       FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"
+                                       FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"
                                        Padding="6,0"/>
                         </Border>
 
@@ -264,7 +265,7 @@
                             <TextBlock x:Phase="1" Text="{x:Bind Size, Mode=OneWay}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
-                                       FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"
+                                       FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"
                                        Padding="6,0"/>
                         </Border>
 
@@ -275,7 +276,7 @@
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
                                        FontFamily="{StaticResource MonoFont}"
-                                       FontSize="{Binding SecondaryFontSize, Source={StaticResource FontScale}}"
+                                       FontSize="{x:Bind helpers:FontScaleService.Instance.SecondaryFontSize, Mode=OneWay}"
                                        FontWeight="Bold"
                                        Padding="6,0"/>
                         </Border>

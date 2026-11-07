@@ -671,7 +671,9 @@ namespace OrielFolder.Views
             {
                 try
                 {
-                    if (Helpers.ArchivePathHelper.IsArchivePath(file.Path))
+                    if (Helpers.ViewItemHelper.TryOpenArchiveInApp(ViewModel, file.Path, "ListModeView"))
+                    { /* .zip: browsed in place like a folder (same as Miller Columns) */ }
+                    else if (Helpers.ArchivePathHelper.IsArchivePath(file.Path))
                         MainWindow.OpenArchiveEntryStaticAsync(file.Path);
                     else
                     {
@@ -792,7 +794,9 @@ namespace OrielFolder.Views
             {
                 try
                 {
-                    if (Helpers.ArchivePathHelper.IsArchivePath(file.Path))
+                    if (Helpers.ViewItemHelper.TryOpenArchiveInApp(ViewModel, file.Path, "ListModeView"))
+                    { /* .zip: browsed in place like a folder (same as Miller Columns) */ }
+                    else if (Helpers.ArchivePathHelper.IsArchivePath(file.Path))
                         MainWindow.OpenArchiveEntryStaticAsync(file.Path);
                     else
                     {
@@ -1172,6 +1176,8 @@ namespace OrielFolder.Views
 
         private double _densityRowHeight = 28.0; // comfortable default
 
+        private double _itemStyleRowHeight = double.NaN; // MinHeight of the ItemContainerStyle we last assigned
+
         public void ApplyDensity(string density)
         {
             _densityRowHeight = Helpers.FontScaleService.Instance.GetFileRowHeight(density);
@@ -1184,11 +1190,16 @@ namespace OrielFolder.Views
                 wrapGrid.ItemHeight = _densityRowHeight;
             }
 
-            // Update ItemContainerStyle MinHeight (based on ListViewItemStyle from App.xaml)
-            var baseStyle = (Style)Application.Current.Resources["ListViewItemStyle"];
-            var style = new Style(typeof(GridViewItem)) { BasedOn = baseStyle };
-            style.Setters.Add(new Setter(GridViewItem.MinHeightProperty, _densityRowHeight));
-            ListGridView.ItemContainerStyle = style;
+            // Update ItemContainerStyle MinHeight (based on ListViewItemStyle from App.xaml).
+            // A new style rebuilds every realized item, so replace it only when the height changes.
+            if (_itemStyleRowHeight != _densityRowHeight)
+            {
+                var baseStyle = (Style)Application.Current.Resources["ListViewItemStyle"];
+                var style = new Style(typeof(GridViewItem)) { BasedOn = baseStyle };
+                style.Setters.Add(new Setter(GridViewItem.MinHeightProperty, _densityRowHeight));
+                ListGridView.ItemContainerStyle = style;
+                _itemStyleRowHeight = _densityRowHeight;
+            }
 
             // Update existing realized containers (ItemsPanelRoot 자식만 — 14K 전수 순회 방지)
             var densityPanel = ListGridView.ItemsPanelRoot;

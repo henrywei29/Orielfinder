@@ -369,19 +369,23 @@ namespace OrielFolder.Views
         #region Density
 
         private double _densityRowHeight = 28.0; // comfortable default
+        private double _itemStyleRowHeight = double.NaN; // MinHeight of the ItemContainerStyle we last assigned
 
         public void ApplyDensity(string density)
         {
             _densityRowHeight = Helpers.FontScaleService.Instance.GetFileRowHeight(density);
 
             // Update header row height to match
-            if (HeaderGrid != null)
+            if (HeaderGrid != null && HeaderGrid.Height != _densityRowHeight)
                 HeaderGrid.Height = _densityRowHeight;
 
-            // Update MinHeight on ListViewItem style
-            if (DetailsListView != null)
+            // Update MinHeight on ListViewItem style. A new ItemContainerStyle makes the ListView discard
+            // and rebuild every realized row, and startup applies density again after the first rows
+            // are shown (same value), so only replace the style when the height actually changes.
+            if (DetailsListView != null && _itemStyleRowHeight != _densityRowHeight)
             {
                 DetailsListView.ItemContainerStyle = CreateDetailsItemStyle(_densityRowHeight);
+                _itemStyleRowHeight = _densityRowHeight;
             }
 
             // Update existing realized containers (ItemsPanelRoot 자식만 — 14K 전수 순회 방지)
@@ -390,7 +394,7 @@ namespace OrielFolder.Views
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(panel); i++)
             {
                 if (VisualTreeHelper.GetChild(panel, i) is ListViewItem container &&
-                    container.ContentTemplateRoot is Grid grid)
+                    container.ContentTemplateRoot is Grid grid && grid.Height != _densityRowHeight)
                 {
                     grid.Height = _densityRowHeight;
                 }

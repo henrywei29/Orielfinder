@@ -19,6 +19,7 @@
     <x:String x:Key="Icon_ChevronRight">&#xEA6E;</x:String> <!-- ri-arrow-right-s-line -->
 
     <!-- Toolbar Actions -->
+    <x:String x:Key="Icon_Extract">&#xED1F;</x:String> <!-- ri-file-zip-line -->
     <x:String x:Key="Icon_Cut">&#xF0C1;</x:String> <!-- ri-scissors-cut-line -->
     <x:String x:Key="Icon_Copy">&#xECD5;</x:String> <!-- ri-file-copy-line -->
     <x:String x:Key="Icon_Paste">&#xEB91;</x:String> <!-- ri-clipboard-line -->

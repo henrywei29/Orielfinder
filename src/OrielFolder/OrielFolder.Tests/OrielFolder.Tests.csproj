@@ -82,6 +82,7 @@
     <Compile Include="..\OrielFolder\Helpers\AppFontCatalog.cs" Link="Sources\Helpers\AppFontCatalog.cs" />
     <Compile Include="..\OrielFolder\Helpers\FavoritesSnapshot.cs" Link="Sources\Helpers\FavoritesSnapshot.cs" />
     <Compile Include="..\OrielFolder\Helpers\StartupRevealGate.cs" Link="Sources\Helpers\StartupRevealGate.cs" />
+    <Compile Include="..\OrielFolder\Helpers\GcBallast.cs" Link="Sources\Helpers\GcBallast.cs" />
     <!-- Services - file operations (pure C#) -->
     <Compile Include="..\OrielFolder\Services\FileOperations\OperationResult.cs" Link="Sources\Services\OperationResult.cs" />
     <Compile Include="..\OrielFolder\Services\FileOperations\FileOperationProgress.cs" Link="Sources\Services\FileOperationProgress.cs" />

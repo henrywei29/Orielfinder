@@ -1880,6 +1880,22 @@ namespace OrielFolder
 
         #region Toolbar Click Handlers
 
+        /// <summary>
+        /// 툴바 "압축 풀기": 선택한 압축 파일을 현재 폴더의 같은 이름 폴더로 푼다.
+        /// 우클릭 메뉴의 "여기에 압축 풀기"(PerformExtractHere)를 그대로 재사용한다.
+        /// </summary>
+        private async void OnExtractClick(object sender, RoutedEventArgs e)
+        {
+            var archives = GetCurrentSelectedItems()
+                .OfType<FileViewModel>()
+                .Select(f => f.Path)
+                .Where(Helpers.ArchivePathHelper.IsExtractableArchiveFile)
+                .ToList();
+
+            foreach (var path in archives)
+                await ExtractHereAsync(path);
+        }
+
         private void OnCutClick(object sender, RoutedEventArgs e)
         {
             HandleCut();
