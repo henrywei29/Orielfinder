@@ -467,6 +467,8 @@ namespace OrielFolder.Services
                 ["FileType"] = "Typ pliku",
                 ["FilePath"] = "Ścieżka pliku",
                 ["ColumnGit"] = "Git",
+                ["ColumnGitStatus"] = "Status Git",
+                ["ShowColumns"] = "Pokaż kolumny",
                 ["FilterName"] = "Filtruj według nazwy",
                 ["FilterDate"] = "Filtruj według daty",
                 ["FilterSize"] = "Filtruj według rozmiaru",

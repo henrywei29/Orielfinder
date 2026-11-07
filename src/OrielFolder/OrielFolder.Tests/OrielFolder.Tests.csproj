@@ -128,6 +128,7 @@
     <!-- Views - pure logic helpers (no WinUI) -->
     <Compile Include="..\OrielFolder\Views\LogEntryDisplayHelper.cs" Link="Sources\Views\LogEntryDisplayHelper.cs" />
     <Compile Include="..\OrielFolder\Helpers\DetailsColumnOrder.cs" Link="Sources\Helpers\DetailsColumnOrder.cs" />
+    <Compile Include="..\OrielFolder\Helpers\DetailsColumnLayout.cs" Link="Sources\Helpers\DetailsColumnLayout.cs" />
     <Compile Include="..\OrielFolder\Helpers\InlineTreeState.cs" Link="Sources\Helpers\InlineTreeState.cs" />
     <!-- Localization data (partial class, provides Entries tuple for L() fallback) -->
     <Compile Include="..\OrielFolder\Services\LocalizationData.cs" Link="Sources\Services\LocalizationData.cs" />

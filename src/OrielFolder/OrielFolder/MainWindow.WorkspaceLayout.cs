@@ -17,7 +17,30 @@ namespace OrielFolder
     {
         private Grid? _workspaceHost;
         private Canvas? _workspaceCanvas;
-        private ComboBox? _workspaceArrangement;
+        private Button? _workspaceArrangement;
+        private static readonly string[] WorkspaceArrangementKeys = { "Workspace_Horizontal", "Workspace_Vertical", "Workspace_Grid" };
+
+        private void SelectWorkspaceArrangement(int index)
+        {
+            if (_syncingWorkspace || ViewModel.ActiveTab?.WorkspaceLayout is not { } state) return;
+            state.Arrangement = (PaneTileArrangement)index;
+            state.ColumnWeights = state.RowWeights = Array.Empty<double>();
+            _settings.MultiPaneTileArrangement = index;
+            ShowWorkspaceArrangement(index);
+            ArrangeWorkspacePanes();
+        }
+
+        /// <summary>Shows the current arrangement on the toolbar button and checks it in its menu.</summary>
+        private void ShowWorkspaceArrangement(int index)
+        {
+            if (_workspaceArrangement == null || index < 0 || index >= WorkspaceArrangementKeys.Length) return;
+            string text = _loc.Get(WorkspaceArrangementKeys[index]);
+            _workspaceArrangement.Content = text;
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(_workspaceArrangement, text);
+            if (_workspaceArrangement.Flyout is MenuFlyout menu)
+                for (int i = 0; i < menu.Items.Count; i++)
+                    if (menu.Items[i] is RadioMenuFlyoutItem item) item.IsChecked = i == index;
+        }
         private Models.TabItem? _workspaceTab;
         private bool _syncingWorkspace;
         private bool _workspaceDividerDragging;
@@ -43,17 +66,20 @@ namespace OrielFolder
             var add = new Button { Content = _loc.Get("Workspace_AddPane"), Padding = new Thickness(8, 2, 8, 2) };
             add.Click += (_, _) => AddWorkspacePane();
             toolbar.Children.Add(add);
-            _workspaceArrangement = new ComboBox { MinWidth = 100 };
-            foreach (var key in new[] { "Workspace_Horizontal", "Workspace_Vertical", "Workspace_Grid" })
-                _workspaceArrangement.Items.Add(new ComboBoxItem { Content = _loc.Get(key) });
-            _workspaceArrangement.SelectionChanged += (_, _) =>
+            // Same look and size as "Add pane": a plain button showing the current arrangement,
+            // which opens the choices (a ComboBox reserves a fixed-width arrow column and is wider).
+            _workspaceArrangement = new Button { Padding = add.Padding };
+            add.SizeChanged += (_, _) => _workspaceArrangement.MinWidth = add.ActualWidth;
+            var arrangementMenu = new MenuFlyout { Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedLeft };
+            for (int i = 0; i < WorkspaceArrangementKeys.Length; i++)
             {
-                if (_syncingWorkspace || _workspaceArrangement.SelectedIndex < 0 || ViewModel.ActiveTab?.WorkspaceLayout is not { } state) return;
-                state.Arrangement = (PaneTileArrangement)_workspaceArrangement.SelectedIndex;
-                state.ColumnWeights = state.RowWeights = Array.Empty<double>();
-                _settings.MultiPaneTileArrangement = _workspaceArrangement.SelectedIndex;
-                ArrangeWorkspacePanes();
-            };
+                int index = i;
+                var item = new RadioMenuFlyoutItem { Text = _loc.Get(WorkspaceArrangementKeys[i]), GroupName = "WorkspaceArrangement" };
+                item.Click += (_, _) => SelectWorkspaceArrangement(index);
+                arrangementMenu.Items.Add(item);
+            }
+            _workspaceArrangement.Flyout = arrangementMenu;
+            ShowWorkspaceArrangement(_settings.MultiPaneTileArrangement);
             toolbar.Children.Add(_workspaceArrangement);
             _workspaceHost.Children.Add(toolbar);
             Grid.SetRow(_workspaceCanvas, 1);
@@ -147,7 +173,7 @@ namespace OrielFolder
                 ClassicPaneHost.Visibility = Visibility.Collapsed;
                 _workspaceHost!.Visibility = Visibility.Visible;
                 _workspaceArrangement!.Visibility = kind == PaneLayoutKind.Tiled ? Visibility.Visible : Visibility.Collapsed;
-                _workspaceArrangement.SelectedIndex = (int)state.Arrangement;
+                ShowWorkspaceArrangement((int)state.Arrangement);
                 ActivateWorkspaceView(state.ActivePane ?? state.Panes[0]);
                 ArrangeWorkspacePanes();
                 RemoveClosedWorkspaceViews();

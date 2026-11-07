@@ -34,6 +34,15 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!-- Column separator line in the header (theme-aware; created in DetailsModeView.Columns.cs) -->
+        <Style x:Key="ColumnSeparatorLineStyle" TargetType="Border">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
+            <Setter Property="Background" Value="{ThemeResource OrielFolderTextTertiaryBrush}"/>
+            <Setter Property="Opacity" Value="0.55"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid x:Name="RootGrid" Tapped="OnRootTapped" RightTapped="OnEmptyAreaRightTapped" Background="{ThemeResource OrielFolderContentBrush}">
@@ -43,7 +52,13 @@
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Height="24"
+        <!-- Header scrolls horizontally with the list when the columns are wider than the view. -->
+        <ScrollViewer Grid.Row="0" x:Name="HeaderScroller" SizeChanged="OnHeaderScrollerSizeChanged"
+                      HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Hidden"
+                      VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled"
+                      ZoomMode="Disabled" IsTabStop="False"
+                      Background="{ThemeResource OrielFolderBgLayer2Brush}">
+        <Grid Height="24"
               x:Name="HeaderGrid" SizeChanged="OnHeaderSizeChanged" AutomationProperties.AutomationId="Details_Header"
               Background="{ThemeResource OrielFolderBgLayer2Brush}"
               BorderBrush="{ThemeResource OrielFolderBorderSubtleBrush}"
@@ -92,6 +107,7 @@
                         Click="OnHeaderClick" Style="{StaticResource HeaderButtonStyle}"/>
             </Grid>
         </Grid>
+        </ScrollViewer>
 
         <!-- Items List -->
         <Grid Grid.Row="1" x:Name="ListViewWrapper"
@@ -111,6 +127,8 @@
                   SelectionChanged="OnDetailsSelectionChanged"
                   ContainerContentChanging="OnContainerContentChanging"
                   Background="Transparent"
+                  ScrollViewer.HorizontalScrollMode="Enabled"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   Padding="0">
             <ListView.GroupStyle>
                 <GroupStyle>

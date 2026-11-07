@@ -93,10 +93,12 @@ namespace OrielFolder.Views
         private bool _typeColumnVisible = true;
         private bool _sizeColumnVisible = true;
         private bool _gitColumnVisible = true;
-        private GridLength _savedDateWidth = new GridLength(200);
-        private GridLength _savedTypeWidth = new GridLength(150);
-        private GridLength _savedSizeWidth = new GridLength(100);
-        private GridLength _savedGitWidth = new GridLength(50);
+        private bool _nameColumnVisible = true;
+        private bool _cloudStatusColumnVisible = true;
+        private bool _colorTagColumnVisible = true;
+        // User's choice in the header menu. The Git column is shown only when this is on,
+        // Git integration is enabled and the folder is a Git repository.
+        private bool _gitColumnWanted = true;
 
         // ── Feature #31: Column Filters ──
         private string _nameFilter = string.Empty;
@@ -201,6 +203,9 @@ namespace OrielFolder.Views
 
                 DetailsColumnOrderChanged -= OnDetailsColumnOrderChanged;
                 DetailsColumnOrderChanged += OnDetailsColumnOrderChanged;
+                DetailsColumnWidthsChanged -= OnDetailsColumnWidthsChanged;
+                DetailsColumnWidthsChanged += OnDetailsColumnWidthsChanged;
+                RestoreColumnWidths();
                 RestoreDetailsColumnOrder();
                 HeaderGrid.LayoutUpdated -= OnHeaderLayoutUpdated;
                 HeaderGrid.LayoutUpdated += OnHeaderLayoutUpdated;
@@ -444,7 +449,7 @@ namespace OrielFolder.Views
             {
                 OrielFolder.Helpers.DispatcherHelper.SafeEnqueue(DispatcherQueue, () =>
                 {
-                    ToggleColumnVisibility("Git", gitEnabled);
+                    ToggleColumnVisibility("Git", gitEnabled && _gitColumnWanted);
                     if (gitEnabled)
                         TriggerGitStateLoad();
                 });
@@ -1035,13 +1040,21 @@ namespace OrielFolder.Views
                     ["DateColumnVisible"] = _dateColumnVisible,
                     ["TypeColumnVisible"] = _typeColumnVisible,
                     ["SizeColumnVisible"] = _sizeColumnVisible,
-                    ["GitColumnVisible"] = _gitColumnVisible
+                    ["GitColumnVisible"] = _gitColumnVisible,
+                    ["NameColumnVisible"] = _nameColumnVisible,
+                    ["CloudStatusColumnVisible"] = _cloudStatusColumnVisible,
+                    ["ColorTagColumnVisible"] = _colorTagColumnVisible,
+                    ["GitColumnWanted"] = _gitColumnWanted
                 };
                 if (_localSettings != null)
                 {
-                    if (_localSettings.Values["DetailsViewSort"] is ApplicationDataCompositeValue current
-                        && current.TryGetValue("ColumnOrder", out var savedOrder) && savedOrder is string)
-                        composite["ColumnOrder"] = savedOrder;
+                    if (_localSettings.Values["DetailsViewSort"] is ApplicationDataCompositeValue current)
+                    {
+                        if (current.TryGetValue("ColumnOrder", out var savedOrder) && savedOrder is string)
+                            composite["ColumnOrder"] = savedOrder;
+                        if (current.TryGetValue("ColumnWidths", out var savedWidths) && savedWidths is string)
+                            composite["ColumnWidths"] = savedWidths;
+                    }
                     _localSettings.Values["DetailsViewSort"] = composite;
                 }
                 Helpers.DebugLogger.Log("[DetailsModeView] Sort settings saved");
@@ -1135,71 +1148,39 @@ namespace OrielFolder.Views
 
             var flyout = new MenuFlyout();
 
-            // ── Column Visibility (Feature #30) ──
-            var dateToggle = new ToggleMenuFlyoutItem
-            {
-                Text = "Date Modified",
-                IsChecked = _dateColumnVisible
-            };
-            dateToggle.Click += (s, _) => ToggleColumnVisibility("DateModified", !_dateColumnVisible);
+            string L(string key) => _loc?.Get(key) ?? key;
 
-            var typeToggle = new ToggleMenuFlyoutItem
+            // ── Column Visibility (Feature #30): every column except search-only Location ──
+            var columns = new MenuFlyoutSubItem { Text = L("ShowColumns") };
+            var visibleColumns = _columnOrder.Where(IsDetailColumnVisible).ToList();
+            foreach (var id in _columnOrder.Where(Helpers.DetailsColumnLayout.IsToggleable))
             {
-                Text = "Type",
-                IsChecked = _typeColumnVisible
-            };
-            typeToggle.Click += (s, _) => ToggleColumnVisibility("Type", !_typeColumnVisible);
-
-            var sizeToggle = new ToggleMenuFlyoutItem
-            {
-                Text = "Size",
-                IsChecked = _sizeColumnVisible
-            };
-            sizeToggle.Click += (s, _) => ToggleColumnVisibility("Size", !_sizeColumnVisible);
-
-            var gitToggle = new ToggleMenuFlyoutItem
-            {
-                Text = "Git Status",
-                IsChecked = _gitColumnVisible
-            };
-            gitToggle.Click += (s, _) => ToggleColumnVisibility("Git", !_gitColumnVisible);
-
-            flyout.Items.Add(new MenuFlyoutSubItem
-            {
-                Text = "Show Columns",
-                Items =
+                string column = id;
+                bool isChecked = column == "Git" ? _gitColumnWanted : IsDetailColumnVisible(column);
+                var toggle = new ToggleMenuFlyoutItem
                 {
-                    new ToggleMenuFlyoutItem { Text = "Name", IsChecked = true, IsEnabled = false },
-                    dateToggle,
-                    typeToggle,
-                    sizeToggle,
-                    gitToggle
-                }
-            });
+                    Text = L(Helpers.DetailsColumnLayout.LabelKey(column)),
+                    IsChecked = isChecked,
+                    // The header always keeps at least one column.
+                    IsEnabled = !isChecked || Helpers.DetailsColumnLayout.CanHide(visibleColumns, column)
+                };
+                toggle.Click += (s, _) => OnColumnMenuToggle(column);
+                columns.Items.Add(toggle);
+            }
+            flyout.Items.Add(columns);
 
             flyout.Items.Add(new MenuFlyoutSeparator());
 
             // ── Group By (Feature #29) ──
-            var groupByNone = new ToggleMenuFlyoutItem { Text = "None", IsChecked = _currentGroupBy == "None" };
-            groupByNone.Click += (s, _) => SetGroupBy("None");
-
-            var groupByName = new ToggleMenuFlyoutItem { Text = "Name", IsChecked = _currentGroupBy == "Name" };
-            groupByName.Click += (s, _) => SetGroupBy("Name");
-
-            var groupByType = new ToggleMenuFlyoutItem { Text = "Type", IsChecked = _currentGroupBy == "Type" };
-            groupByType.Click += (s, _) => SetGroupBy("Type");
-
-            var groupByDate = new ToggleMenuFlyoutItem { Text = "Date Modified", IsChecked = _currentGroupBy == "DateModified" };
-            groupByDate.Click += (s, _) => SetGroupBy("DateModified");
-
-            var groupBySize = new ToggleMenuFlyoutItem { Text = "Size", IsChecked = _currentGroupBy == "Size" };
-            groupBySize.Click += (s, _) => SetGroupBy("Size");
-
-            flyout.Items.Add(new MenuFlyoutSubItem
+            var groupBy = new MenuFlyoutSubItem { Text = L("GroupBy") };
+            foreach (var (key, label) in new[] { ("None", "None"), ("Name", "Name"), ("Type", "Type"), ("DateModified", "DateModified"), ("Size", "Size") })
             {
-                Text = "Group By",
-                Items = { groupByNone, groupByName, groupByType, groupByDate, groupBySize }
-            });
+                string value = key;
+                var item = new ToggleMenuFlyoutItem { Text = L(label), IsChecked = _currentGroupBy == value };
+                item.Click += (s, _) => SetGroupBy(value);
+                groupBy.Items.Add(item);
+            }
+            flyout.Items.Add(groupBy);
 
             flyout.ShowAt(HeaderGrid, new Microsoft.UI.Xaml.Controls.Primitives.FlyoutShowOptions
             {
@@ -1243,45 +1224,42 @@ namespace OrielFolder.Views
             UpdateAllVisibleContainerWidths();
         }
 
+        /// <summary>Header menu click: toggles the user's choice for a column.</summary>
+        private void OnColumnMenuToggle(string column)
+        {
+            if (column == "Git")
+            {
+                // Git stays tied to Git folders; the menu only says whether it may appear.
+                _gitColumnWanted = !_gitColumnWanted;
+                bool show = _gitColumnWanted && _settings?.ShowGitIntegration != false
+                    && _viewModel?.CurrentFolder?.IsGitFolder == true;
+                ToggleColumnVisibility("Git", show);
+                SaveSortSettings();
+                if (show) TriggerGitStateLoad();
+                return;
+            }
+            bool visible = !IsDetailColumnVisible(column);
+            if (!visible && !Helpers.DetailsColumnLayout.CanHide(_columnOrder.Where(IsDetailColumnVisible), column)) return;
+            ToggleColumnVisibility(column, visible);
+        }
+
         private void ToggleColumnVisibility(string column, bool visible)
         {
             if (IsDetailColumnVisible(column) == visible) return;
             switch (column)
             {
-                case "DateModified":
-                    if (!visible) _savedDateWidth = DateColumnDef.Width;
-                    _dateColumnVisible = visible;
-                    DateColumnDef.Width = visible ? _savedDateWidth : new GridLength(0);
-                    DateColumnDef.MinWidth = visible ? 80 : 0;
-                    DateHeaderContainer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                    break;
-
-                case "Type":
-                    if (!visible) _savedTypeWidth = TypeColumnDef.Width;
-                    _typeColumnVisible = visible;
-                    TypeColumnDef.Width = visible ? _savedTypeWidth : new GridLength(0);
-                    TypeColumnDef.MinWidth = visible ? 50 : 0;
-                    TypeHeaderContainer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                    break;
-
-                case "Size":
-                    if (!visible) _savedSizeWidth = SizeColumnDef.Width;
-                    _sizeColumnVisible = visible;
-                    SizeColumnDef.Width = visible ? _savedSizeWidth : new GridLength(0);
-                    SizeColumnDef.MinWidth = visible ? 50 : 0;
-                    SizeHeaderContainer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                    break;
-
-                case "Git":
-                    if (!visible) _savedGitWidth = GitColumnDef.Width;
-                    _gitColumnVisible = visible;
-                    GitColumnDef.Width = visible ? _savedGitWidth : new GridLength(0);
-                    GitColumnDef.MinWidth = visible ? 40 : 0;
-                    GitHeaderContainer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-                    break;
+                case "Name": _nameColumnVisible = visible; break;
+                case "CloudStatus": _cloudStatusColumnVisible = visible; break;
+                case "ColorTag": _colorTagColumnVisible = visible; break;
+                case "DateModified": _dateColumnVisible = visible; break;
+                case "Type": _typeColumnVisible = visible; break;
+                case "Size": _sizeColumnVisible = visible; break;
+                case "Git": _gitColumnVisible = visible; break;
+                default: return;
             }
 
-            // The same keyed layout drives headers and recycled row cells.
+            // Hidden columns are left out of the header grid (their widths are kept for when
+            // they come back); the same keyed layout drives headers and recycled row cells.
             RebuildColumnHeader();
             UpdateAllVisibleContainerWidths();
             SaveSortSettings();
@@ -1293,25 +1271,22 @@ namespace OrielFolder.Views
         {
             try
             {
-                if (_localSettings?.Values["DetailsViewSort"] is ApplicationDataCompositeValue composite)
+                if (_localSettings?.Values["DetailsViewSort"] is not ApplicationDataCompositeValue composite) return;
+                if (composite.TryGetValue("GitColumnWanted", out var wanted) && wanted is bool gitWanted)
+                    _gitColumnWanted = gitWanted;
+                foreach (var (key, column) in new[]
                 {
-                    if (composite.TryGetValue("DateColumnVisible", out var dateObj) && dateObj is bool dateVis)
-                    {
-                        if (!dateVis) ToggleColumnVisibility("DateModified", false);
-                    }
-                    if (composite.TryGetValue("TypeColumnVisible", out var typeObj) && typeObj is bool typeVis)
-                    {
-                        if (!typeVis) ToggleColumnVisibility("Type", false);
-                    }
-                    if (composite.TryGetValue("SizeColumnVisible", out var sizeObj) && sizeObj is bool sizeVis)
-                    {
-                        if (!sizeVis) ToggleColumnVisibility("Size", false);
-                    }
-                    if (composite.TryGetValue("GitColumnVisible", out var gitObj) && gitObj is bool gitVis)
-                    {
-                        if (!gitVis) ToggleColumnVisibility("Git", false);
-                    }
+                    ("NameColumnVisible", "Name"), ("CloudStatusColumnVisible", "CloudStatus"),
+                    ("ColorTagColumnVisible", "ColorTag"), ("DateColumnVisible", "DateModified"),
+                    ("TypeColumnVisible", "Type"), ("SizeColumnVisible", "Size"), ("GitColumnVisible", "Git")
+                })
+                {
+                    if (composite.TryGetValue(key, out var value) && value is bool visible && !visible)
+                        ToggleColumnVisibility(column, false);
                 }
+                // Never restore an empty header.
+                if (!_columnOrder.Any(id => Helpers.DetailsColumnLayout.IsToggleable(id) && IsDetailColumnVisible(id)))
+                    ToggleColumnVisibility("Name", true);
             }
             catch (Exception ex)
             {
@@ -1722,7 +1697,7 @@ namespace OrielFolder.Views
             // Git 레포 폴더 → 자동으로 Git 컬럼 표시, 아닌 폴더 → 자동 숨김
             if (folder.IsGitFolder)
             {
-                if (!_gitColumnVisible)
+                if (!_gitColumnVisible && _gitColumnWanted)
                     ToggleColumnVisibility("Git", true);
             }
             else
@@ -1818,6 +1793,8 @@ namespace OrielFolder.Views
                 _rubberBandHelper = null;
 
                 DetailsColumnOrderChanged -= OnDetailsColumnOrderChanged;
+                DetailsColumnWidthsChanged -= OnDetailsColumnWidthsChanged;
+                DetachListScrollViewer();
                 HeaderGrid.LayoutUpdated -= OnHeaderLayoutUpdated;
                 foreach (var pair in _columnWidthCallbacks)
                     pair.Key.UnregisterPropertyChangedCallback(ColumnDefinition.WidthProperty, pair.Value);
