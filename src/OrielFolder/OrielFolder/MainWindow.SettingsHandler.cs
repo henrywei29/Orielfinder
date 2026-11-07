@@ -874,6 +874,8 @@ namespace OrielFolder
                     {
                         var lang = value as string ?? "system";
                         _loc.Language = lang;
+                        // CJK fallback 순서가 UI 언어를 따르므로 언어 변경 시 폰트 재적용
+                        ApplyFontFamily(_settings.FontFamily);
                     });
                     break;
 
@@ -908,31 +910,66 @@ namespace OrielFolder
             }
         }
 
-        private const string CjkFallback = ", Malgun Gothic, Microsoft YaHei UI, Microsoft JhengHei UI, Yu Gothic UI";
-
-        // 번들 폰트 매핑: 설정 이름 → ms-appx 경로#패밀리명
-        private static readonly Dictionary<string, string> BundledFonts = new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Pretendard"] = "/Assets/Fonts/PretendardVariable.ttf#Pretendard Variable"
-        };
-
         /// <summary>
         /// 폰트 설정 이름에서 FontFamily 생성에 필요한 스펙 문자열을 반환한다.
-        /// 번들 폰트는 ms-appx 경로, 시스템 폰트는 이름 + CJK fallback.
-        /// QuickLookWindow 등 외부에서도 동일한 폰트 해석에 사용.
+        /// 번들 폰트는 ms-appx 경로, 시스템 폰트는 이름 + UI 언어별 CJK fallback.
+        /// QuickLookWindow / SettingsWindow 등 외부에서도 동일한 폰트 해석에 사용.
         /// </summary>
         internal static string ResolveFontSpec(string fontFamily)
+            => Helpers.AppFontCatalog.ResolveFontSpec(fontFamily, CurrentUiLanguage());
+
+        private static string? CurrentUiLanguage()
         {
-            return BundledFonts.TryGetValue(fontFamily, out var bundledPath)
-                ? bundledPath
-                : fontFamily + CjkFallback;
+            try
+            {
+                return (App.Current?.Services?.GetService(typeof(Services.LocalizationService))
+                    as Services.LocalizationService)?.Language;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// The embedded Settings page is declared with x:Load="False" so it is not built during
+        /// startup. This realizes it on first use and gives it what the startup path used to give it
+        /// (Back handler, the user's font — the tree walk in ApplyFontFamily could not reach it).
+        /// </summary>
+        private Views.SettingsModeView? EnsureSettingsView()
+        {
+            if (SettingsView != null || _isClosed) return SettingsView;
+            var perf = Helpers.PerfTrace.Now();
+            (this.Content as FrameworkElement)?.FindName(nameof(SettingsView));
+            if (SettingsView == null) return null;
+
+            SettingsView.BackRequested += (s, e) => CloseCurrentSettingsTab();
+            try
+            {
+                var font = new FontFamily(ResolveFontSpec(_settings.FontFamily));
+                ApplyFontToVisualTree(SettingsView, font);
+                // Children of templated controls appear only after the first layout.
+                SettingsView.Loaded += OnSettingsViewFirstLoaded;
+            }
+            catch (Exception ex) { Helpers.DebugLogger.Log($"[MainWindow] Settings font apply failed: {ex.Message}"); }
+            Helpers.PerfTrace.Span("SettingsView.Realize", perf);
+            return SettingsView;
+        }
+
+        private void OnSettingsViewFirstLoaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement view) return;
+            view.Loaded -= OnSettingsViewFirstLoaded;
+            if (_isClosed) return;
+            var stats = new FontApplyStats();
+            ApplyFontToVisualTree(view, new FontFamily(ResolveFontSpec(_settings.FontFamily)), stats);
+            Helpers.DebugLogger.Log($"[Font] Settings page realized: applied={stats.Applied} protected={stats.Protected}");
         }
 
         /// <summary>
         /// 폰트 패밀리를 모든 뷰에 적용한다.
         /// 번들 폰트는 앱 내 경로로 참조, 그 외는 시스템 폰트명 사용.
-        /// 사용자가 어떤 폰트를 선택하든 CJK fallback이 자동 추가됨.
-        /// 번들 폰트 경로와 시스템 폰트명은 혼합 불가 — 번들 폰트는 단독 사용.
+        /// 사용자가 어떤 폰트를 선택하든 UI 언어에 맞는 CJK fallback이 자동 추가됨.
         /// </summary>
         private void ApplyFontFamily(string fontFamily)
         {
@@ -947,7 +984,9 @@ namespace OrielFolder
                 root.Resources["ContentControlThemeFontFamily"] = font;
 
                 // (2) 비주얼 트리 순회 — TextBlock/Control에 직접 FontFamily 적용
-                ApplyFontToVisualTree(root, font);
+                var stats = new FontApplyStats();
+                ApplyFontToVisualTree(root, font, stats);
+                Helpers.DebugLogger.Log($"[Font] MainWindow '{fontFamily}' spec='{fontSpec}' applied={stats.Applied} protected={stats.Protected}");
 
                 // (3) 프리뷰 패널 전파 — named TextBlock에 직접 설정
                 LeftPreviewPanel?.ApplyFont(font);
@@ -958,42 +997,47 @@ namespace OrielFolder
             }
         }
 
+        /// <summary>폰트 적용 결과 집계 (진단 로그용).</summary>
+        internal sealed class FontApplyStats
+        {
+            public int Applied;
+            public int Protected;
+        }
+
         /// <summary>
         /// 비주얼 트리를 재귀 순회하며 TextBlock과 Control에 FontFamily를 적용한다.
-        /// 모노폰트(Cascadia/Consolas), 아이콘 폰트(remixicon/Segoe Fluent Icons)는 건너뛴다.
+        /// XAML에서 의도적으로 지정한 모노폰트/아이콘 폰트는 건너뛰지만,
+        /// 이전에 적용한 사용자 폰트(Cascadia Code·Consolas 포함)는 항상 교체한다 —
+        /// 판단 규칙은 <see cref="Helpers.AppFontCatalog.ShouldReplaceFont"/>.
         /// </summary>
-        internal static void ApplyFontToVisualTree(DependencyObject parent, FontFamily font)
+        internal static void ApplyFontToVisualTree(DependencyObject parent, FontFamily font, FontApplyStats? stats = null)
         {
             var count = VisualTreeHelper.GetChildrenCount(parent);
             for (var i = 0; i < count; i++)
             {
                 var child = VisualTreeHelper.GetChild(parent, i);
 
-                if (child is TextBlock tb && !IsExcludedFont(tb.FontFamily))
+                if (child is TextBlock tb)
                 {
-                    tb.FontFamily = font;
+                    if (Helpers.AppFontCatalog.ShouldReplaceFont(tb.FontFamily?.Source))
+                    {
+                        tb.FontFamily = font;
+                        if (stats != null) stats.Applied++;
+                    }
+                    else if (stats != null) stats.Protected++;
                 }
-                else if (child is Microsoft.UI.Xaml.Controls.Control ctrl && !IsExcludedFont(ctrl.FontFamily))
+                else if (child is Microsoft.UI.Xaml.Controls.Control ctrl)
                 {
-                    ctrl.FontFamily = font;
+                    if (Helpers.AppFontCatalog.ShouldReplaceFont(ctrl.FontFamily?.Source))
+                    {
+                        ctrl.FontFamily = font;
+                        if (stats != null) stats.Applied++;
+                    }
+                    else if (stats != null) stats.Protected++;
                 }
 
-                ApplyFontToVisualTree(child, font);
+                ApplyFontToVisualTree(child, font, stats);
             }
-        }
-
-        /// <summary>
-        /// 모노폰트, 아이콘 폰트 등 사용자 폰트로 대체하면 안 되는 폰트인지 확인.
-        /// </summary>
-        private static bool IsExcludedFont(FontFamily? ff)
-        {
-            var src = ff?.Source;
-            if (string.IsNullOrEmpty(src)) return false;
-            return src.Contains("Consolas", StringComparison.OrdinalIgnoreCase)
-                || src.Contains("Cascadia", StringComparison.OrdinalIgnoreCase)
-                || src.Contains("remixicon", StringComparison.OrdinalIgnoreCase)
-                || src.Contains("Segoe Fluent", StringComparison.OrdinalIgnoreCase)
-                || src.Contains("Segoe MDL2", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1099,7 +1143,7 @@ namespace OrielFolder
             ApplyIconFontScaleToGlobalUI(newLevel);
 
             // Settings page — Collapsed 상태에선 VisualTree 순회 불가하므로 Visible일 때만 적용
-            if (SettingsView.Visibility == Visibility.Visible)
+            if (SettingsView?.Visibility == Visibility.Visible)
                 SettingsView.ApplyIconFontScale(newLevel);
 
             // Home page — 동일하게 Visible일 때만 적용

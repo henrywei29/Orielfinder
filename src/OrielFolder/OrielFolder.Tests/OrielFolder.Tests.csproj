@@ -79,6 +79,10 @@
     <Compile Include="..\OrielFolder\Helpers\WindowFrameGeometry.cs" Link="Sources\Helpers\WindowFrameGeometry.cs" />
     <Compile Include="..\OrielFolder\Helpers\ArchivePreviewResolver.cs" Link="Sources\Helpers\ArchivePreviewResolver.cs" />
     <Compile Include="..\OrielFolder\Helpers\FontScaleService.cs" Link="Sources\Helpers\FontScaleService.cs" />
+    <Compile Include="..\OrielFolder\Helpers\AppFontCatalog.cs" Link="Sources\Helpers\AppFontCatalog.cs" />
+    <Compile Include="..\OrielFolder\Helpers\FavoritesSnapshot.cs" Link="Sources\Helpers\FavoritesSnapshot.cs" />
+    <Compile Include="..\OrielFolder\Helpers\StartupRevealGate.cs" Link="Sources\Helpers\StartupRevealGate.cs" />
+    <Compile Include="..\OrielFolder\Helpers\GcBallast.cs" Link="Sources\Helpers\GcBallast.cs" />
     <!-- Services - file operations (pure C#) -->
     <Compile Include="..\OrielFolder\Services\FileOperations\OperationResult.cs" Link="Sources\Services\OperationResult.cs" />
     <Compile Include="..\OrielFolder\Services\FileOperations\FileOperationProgress.cs" Link="Sources\Services\FileOperationProgress.cs" />
@@ -124,6 +128,7 @@
     <!-- Views - pure logic helpers (no WinUI) -->
     <Compile Include="..\OrielFolder\Views\LogEntryDisplayHelper.cs" Link="Sources\Views\LogEntryDisplayHelper.cs" />
     <Compile Include="..\OrielFolder\Helpers\DetailsColumnOrder.cs" Link="Sources\Helpers\DetailsColumnOrder.cs" />
+    <Compile Include="..\OrielFolder\Helpers\DetailsColumnLayout.cs" Link="Sources\Helpers\DetailsColumnLayout.cs" />
     <Compile Include="..\OrielFolder\Helpers\InlineTreeState.cs" Link="Sources\Helpers\InlineTreeState.cs" />
     <!-- Localization data (partial class, provides Entries tuple for L() fallback) -->
     <Compile Include="..\OrielFolder\Services\LocalizationData.cs" Link="Sources\Services\LocalizationData.cs" />

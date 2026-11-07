@@ -15,6 +15,11 @@ using System.Threading;
 using System.Threading.Tasks;
 namespace OrielFolder.Helpers {
     public static class DebugLogger { public static void Log(string message) {} }
+    public static class PerfTrace {
+        public static long Now() => 0;
+        public static long ElapsedMs(long start) => 0;
+        public static void FolderLoaded(long start, long cacheMs, bool fromCache, int items, string path) {}
+    }
     public static class ArchivePathHelper { public static bool IsArchivePath(string path) => path == "archive"; }
     public static class UncPathHelper {
         public static bool IsShellNamespaceRoot(string path) => path == "wsl";

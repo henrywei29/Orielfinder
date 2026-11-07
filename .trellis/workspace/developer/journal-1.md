@@ -361,3 +361,109 @@ Removed WinUI extended title-bar mode (drag cap ~120/s) in MainWindow and Quick 
 ### Next Steps
 
 - User decides commit and Trellis finish/archive
+
+
+## Session 12: Release OrielFolder 1.0.2 (user-requested)
+<!-- trellis-session: v=2 fp=b6d85e84f3ecd651 -->
+
+**Date**: 2026-11-06
+**Task**: Release OrielFolder 1.0.2 (user-requested)
+**Branch**: `release/1.0.2`
+
+### Summary
+
+User asked: '直接帮我上传这个版本去GitHub库吧，软件版本用1.0.1' then chose 'push main + Release with new EXE' and version '改成 1.0.2' (v1.0 package was already 1.0.1.0). On branch release/1.0.2: Dev identity switched back to v1.0 release values, version 1.0.2.0, package-oriel.ps1 BOM restored; packaged outside the Claude container with the existing cert F7940CE8; dist/ + README updated; main fast-forwarded, tag v1.0.2 pushed, GitHub Release with single-file EXE + source zip. rename/orielfolder stays Dev.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `ceeca96` | release: OrielFolder 1.0.2（正式身份 + 预构建安装包） |
+
+### Testing
+
+- [OK] unit 1183 pass (release identity); MSIX manifest/contents checked; signatures Valid; release asset digests match
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User installs v1.0.2 over v1.0 to confirm upgrade keeps settings; Dev work continues on rename/orielfolder
+
+
+## Session 13: Font settings fix + bundled Inter/Geist/Noto Sans SC (Dev, uncommitted)
+<!-- trellis-session: v=2 fp=6a2497b5eb3f99ec -->
+
+**Date**: 2026-11-06
+**Task**: Font settings fix + bundled Inter/Geist/Noto Sans SC (Dev, uncommitted)
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Verified the uncommitted font work left on rename/orielfolder (files written 2026-11-06 21:33, no Trellis task/journal recorded). New Helpers/AppFontCatalog.cs centralizes font options, bundled-font specs and CJK fallback order by UI language (zh-Hans: YaHei before Malgun Gothic; Inter/Geist add bundled Noto Sans SC). Fixes root cause: after picking Cascadia Code/Consolas, ShouldReplace-style check treated every element as a protected mono font, so later font switches applied to 0 elements. Settings combo now generated from the catalog; language change re-applies the font; open-source list + OpenSourceLicenses.md list the 3 new OFL fonts. A separate out-of-tree release build 1.0.2.1 with the same patch exists in D:\codex\OrielFolder-1.0.2.1 (not committed to any branch).
+
+### Main Changes
+
+- Helpers/AppFontCatalog.cs (new) + AppFontCatalogTests.cs (new, 10 tests)
+- MainWindow.SettingsHandler.cs / SettingsWindow.cs: use catalog, diagnostic [Font] log with applied/protected counts
+- SettingsModeView.xaml(.cs): combo from catalog, 3 bundled-font license rows; csproj copies 3 fonts
+
+### Git Commits
+
+(No commits - planning session)
+
+### Testing
+
+- [OK] [OK] OrielFolder.Tests: 1193 passed, 3 skipped, 0 failed (current tree)
+- [OK] [OK] isolated build copy in D:\codex\Orielfolder-dev\font-verify-20261106: 0 errors, fonts in output, identity LocalDevelopment.OrielFolderDev
+- [OK] [NOT RUN] runtime check of font switching in Dev app by this session
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User checks font switching in Dev (incl. Cascadia Code -> other font), then authorizes commit of the font files on rename/orielfolder
+
+
+## Session 14: Folder open / new-tab perf + zip open in all views (Dev)
+<!-- trellis-session: v=2 fp=bded4c4fab4c65be -->
+
+**Date**: 2026-11-07
+**Task**: Folder open / new-tab perf + zip open in all views (Dev)
+**Branch**: `rename/orielfolder`
+
+### Summary
+
+Task 11-07-folder-open-perf: cold start faster (System32 window 4.52->2.35 s, committed 7ac7541). New-tab stalls traced to WinUI AddMemoryPressure-induced Gen2 GCs walking all XAML objects (hidden tabs included); GcBallast (512 MB untouched array) + x:Bind font sizes in the Details row template cut 6-tab total stall 12.4-13.4 s -> 5.0-5.2 s (GC 6.7-7.2 -> 2.1-2.3 s, working set 525 -> ~610 MB). ApplyDensity no longer rebuilds rows when the height is unchanged (cold start rows 208 -> 159, first-3s stall 849 -> 454 ms). Task 11-07-archive-open-extract (side session): Details/List/Icon open .zip in-app like Miller, Up works inside archives, toolbar Extract Here button left of Cut. Part 2 + zip committed 27e72ca after the user saw the Dev screenshots; both tasks archived.
+
+### Main Changes
+
+- Helpers/GcBallast.cs + Program.cs; DetailsModeView.xaml x:Bind font sizes; Details/List/Icon ApplyDensity style guard; PerfTrace.WatchFrames (DEBUG)
+- ViewItemHelper.TryOpenArchiveInApp, ArchivePathHelper.GetParentPath/IsExtractableArchiveFile/GetUniqueExtractDestination, ExplorerViewModel.NavigateUp archive fix, ToolbarExtractButton
+- Spec layout-window-performance.md: GC/ballast, x:Bind, ItemContainerStyle rebuild, no data-driven x:Load
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `7ac7541` | perf(startup): 冷启动窗口更早显示，打开 System32 从 ~4.5s 降到 ~2.35s |
+| `27e72ca` | perf(tabs): 新标签卡顿减半；zip 在所有视图内打开 + 工具栏解压按钮 |
+
+### Testing
+
+- [OK] [OK] build-dev.ps1 0 errors; unit tests 1235 passed / 0 failed (GcBallastTests, DetailsRowTemplateTests, ArchiveExtractAndNavigationTests)
+- [OK] [OK] measured in Debug Dev, scripts/results in D:\codex\perf-open
+- [OK] zip flow re-checked in Dev; 7 screenshots sent to the user, who approved the commit
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User checks Dev (tabs, font scale, Git column, zip open/Up/extract) and authorizes commit by explicit path
+- Optional trade-off: Details CacheLength 1 / release hidden-tab panels (per-Gen2 138->45 ms)

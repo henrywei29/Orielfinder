@@ -744,6 +744,7 @@
                     <StackPanel x:Name="FileActionsPanel" Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="2"
                                     Visibility="{x:Bind IsNotSpecialMode(ViewModel.CurrentViewMode), Mode=OneWay}">
+                    <Button x:Name="ToolbarExtractButton" AutomationProperties.AutomationId="Button_Extract" Style="{StaticResource CompactToolbarButtonStyle}" ToolTipService.ToolTip="여기에 압축 풀기" Click="OnExtractClick" IsEnabled="False"><FontIcon FontFamily="{StaticResource RemixIcons}" Glyph="{StaticResource Icon_Extract}"/></Button>
                     <Button x:Name="ToolbarCutButton" AutomationProperties.AutomationId="Button_Cut" Style="{StaticResource CompactToolbarButtonStyle}" ToolTipService.ToolTip="잘라내기 (Ctrl+X)" Click="OnCutClick" IsEnabled="False"><FontIcon FontFamily="{StaticResource RemixIcons}" Glyph="{StaticResource Icon_Cut}"/></Button>
                     <Button x:Name="ToolbarCopyButton" AutomationProperties.AutomationId="Button_Copy" Style="{StaticResource CompactToolbarButtonStyle}" ToolTipService.ToolTip="복사 (Ctrl+C)" Click="OnCopyClick" IsEnabled="False"><FontIcon FontFamily="{StaticResource RemixIcons}" Glyph="{StaticResource Icon_Copy}"/></Button>
                     <Button x:Name="ToolbarPasteButton" AutomationProperties.AutomationId="Button_Paste" Style="{StaticResource CompactToolbarButtonStyle}" ToolTipService.ToolTip="붙여넣기 (Ctrl+V)" Click="OnPasteClick" IsEnabled="False"><FontIcon FontFamily="{StaticResource RemixIcons}" Glyph="{StaticResource Icon_Paste}"/></Button>
@@ -1254,7 +1255,9 @@
                                                 Visibility="Collapsed"/>
 
                             <!-- Settings View (Left only) -->
+                            <!-- x:Load=False: built on first use by EnsureSettingsView() (~250 ms of startup otherwise) -->
                             <views:SettingsModeView x:Name="SettingsView"
+                                                    x:Load="False"
                                                     Visibility="Collapsed"/>
 
                             <!-- Action Log View (Left only) -->

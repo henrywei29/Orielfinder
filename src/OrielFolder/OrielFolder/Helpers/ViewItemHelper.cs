@@ -37,7 +37,11 @@ namespace OrielFolder.Helpers
             {
                 try
                 {
-                    if (ArchivePathHelper.IsArchivePath(file.Path))
+                    if (TryOpenArchiveInApp(explorer, file.Path, viewName))
+                    {
+                        // .zip: browsed in place like a folder (same as Miller Columns)
+                    }
+                    else if (ArchivePathHelper.IsArchivePath(file.Path))
                     {
                         MainWindow.OpenArchiveEntryStaticAsync(file.Path);
                         DebugLogger.Log($"[{viewName}] Extracting archive entry {file.Name}");
@@ -70,6 +74,25 @@ namespace OrielFolder.Helpers
                     DebugLogger.Log($"[{viewName}] Error opening file: {ex.Message}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Opens a browsable archive (.zip) inside OrielFolder, in the current tab, the same way
+        /// Miller Columns does (HandleFileSelection → archive:// path), instead of handing it to
+        /// ShellExecute — which opened it in Windows Explorer from the Details / List / Icon views.
+        /// Returns false (and does nothing) for anything that is not a browsable archive file.
+        /// </summary>
+        public static bool TryOpenArchiveInApp(ExplorerViewModel? explorer, string path, string viewName)
+        {
+            if (explorer == null || !ArchivePathHelper.IsBrowsableArchive(path)) return false;
+
+            // 검색 결과에서 연 경우: 폴더와 동일하게 검색을 취소하고 해당 위치로 이동
+            if (explorer.HasActiveSearchResults)
+                explorer.CancelRecursiveSearch();
+
+            _ = explorer.NavigateToPath(ArchivePathHelper.Combine(path, ""));
+            DebugLogger.Log($"[{viewName}] Opening archive in app: {path}");
+            return true;
         }
 
         /// <summary>

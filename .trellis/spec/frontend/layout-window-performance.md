@@ -84,8 +84,19 @@ paths:
 
 - Miller column area = `Star`, preview = `Pixel`. Making both `Star` causes proportional jumps on window resize
   (`ApplyMillerColumnWidth()` in SplitPreviewManager).
-- Details header Grid and row template Grid compute `*` independently; splitter widths are accumulated from
-  header `ColumnDefinition`s in `RecalcCellTotalWidths()` — don't round per cell.
+- Details header Grid and row template Grid compute `*` independently; row cells get their widths from the header
+  `ColumnDefinition.ActualWidth`s (`RefreshColumnWidths` → `ApplyCellWidths`) — don't round per cell.
+- Details column resize is Explorer-style (`DetailsModeView.Columns.cs`, rules in `Helpers/DetailsColumnLayout`):
+  the separator between two columns only resizes the column on its left; every column to its right keeps its width
+  and moves. Name stretches (`*`) until the first separator drag, which fixes Name to its current width; free space
+  then goes to a trailing filler column. Separators are our own 8-px hit areas over the 2-px gap columns (rows keep
+  the matching 2-px right margin) with a visible 1-px line (`ColumnSeparatorLineStyle`) — no `GridSplitter`
+  (its PreviousAndNext behaviour moved the neighbour instead). Widths are saved in `DetailsViewSort.ColumnWidths`
+  and broadcast to all Details views like the column order. Wider columns scroll horizontally: the ListView has
+  horizontal scrolling and the header sits in `HeaderScroller` (MinWidth = view width), kept at the list's
+  horizontal offset from `ViewChanging`/`ViewChanged`.
+- Header menu: every column except search-only Location can be toggled (at least one stays visible); labels are
+  localized. The Git menu entry is a preference (`GitColumnWanted`): the column still appears only in Git folders.
 - `GridSplitter` / sizers must account for `RasterizationScale`.
 
 ## Virtualization & hot paths (performance budgets enforced by tests)
@@ -104,6 +115,22 @@ paths:
 - Context menus, Shell "New", tab menus must stay responsive (dedicated `test-*-responsiveness.ps1`,
   `test-tab-menu-dispose-performance.ps1`, `test-workspace-activation-performance.ps1`).
 - Thumbnails are produced by the out-of-process `OrielFolder.Thumbs` worker; never decode large images on the UI thread.
+- GC and XAML element count (measured 2026-11-07, Debug, 6 System32 tabs): WinUI reports each XAML element's
+  native memory via `GC.AddMemoryPressure`, which induces Gen2 GCs (1–2 per frame while rows realize); each Gen2
+  walks every live XAML object, hidden tabs included, so its pause grows with tab count (22→141 ms).
+  `Helpers/GcBallast` (512 MB untouched array, Program.Main) raises the pressure threshold: GC time per new tab
+  1.0–1.4 s → 0.1–0.6 s. Server GC / non-concurrent GC: no effect. The Details row template binds font sizes
+  with `x:Bind helpers:FontScaleService.Instance.*` (no `{Binding}` objects): alone no effect, but with the
+  ballast fewer objects pile up between Gen2s (per-Gen2 ~220 → ~155 ms, working set ~650 → ~610 MB at 6 tabs
+  vs 525 MB originally). Guarded by `DetailsRowTemplateTests`.
+- Assigning `ItemContainerStyle` discards and rebuilds every realized row. `ApplyDensity` in Details/List/Icon
+  only replaces the style when the row height (or Icon spacing) changes; startup re-applies density after the
+  first rows are shown, which used to build the first screen twice (cold start System32: rows 208 → 159,
+  stuck time in the first 3 s 849 → 454 ms).
+- Do **not** use data-driven `x:Load="{x:Bind …}"` in list row templates: a new or recycled container bound to an
+  item whose condition is already true never creates the element (Git M/? disappeared), and re-raising
+  PropertyChanged does not recover it. Fewer row elements would roughly halve each Gen2 pause; it needs another
+  mechanism.
 
 ## Performance work rules
 

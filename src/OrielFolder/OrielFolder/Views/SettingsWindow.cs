@@ -77,7 +77,9 @@ public sealed class SettingsWindow : Window
         };
         var font = new FontFamily(MainWindow.ResolveFontSpec(_settings.FontFamily));
         _view.FontFamily = font;
-        MainWindow.ApplyFontToVisualTree(_view, font);
+        var stats = new MainWindow.FontApplyStats();
+        MainWindow.ApplyFontToVisualTree(_view, font, stats);
+        Helpers.DebugLogger.Log($"[Font] SettingsWindow '{_settings.FontFamily}' applied={stats.Applied} protected={stats.Protected}");
         _view.ApplyIconFontScale(Helpers.FontScaleService.Instance.Level);
     }
 }

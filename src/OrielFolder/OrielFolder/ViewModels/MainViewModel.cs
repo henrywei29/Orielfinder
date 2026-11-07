@@ -992,22 +992,98 @@ namespace OrielFolder.ViewModels
 
         #region Favorites
 
+        // Bumped by any Favorites change that did not come from ApplyLoadedFavorites (pin, unpin,
+        // drag reorder): a Quick Access read that started earlier must not overwrite it.
+        private int _favoritesEditVersion;
+        private bool _applyingLoadedFavorites;
+        private bool _favoritesEditTrackingHooked;
+
+        /// <summary>
+        /// Startup: show the favorites from the last Quick Access read at once, then read Quick
+        /// Access (Shell COM — ~400 ms on the UI thread when done synchronously) on a background STA
+        /// thread and replace the list only if it changed.
+        /// </summary>
         private void LoadFavorites()
         {
+            if (!_favoritesEditTrackingHooked)
+            {
+                _favoritesEditTrackingHooked = true;
+                Favorites.CollectionChanged += (_, _) => { if (!_applyingLoadedFavorites) _favoritesEditVersion++; };
+            }
+
+            List<Helpers.FavoriteSnapshotEntry>? shownEntries = null;
             try
             {
-                var items = _favoritesService.LoadFavorites();
+                var snapshot = _favoritesService.LoadSnapshot();
+                if (snapshot != null && snapshot.Count > 0)
+                {
+                    shownEntries = ToSnapshotEntries(snapshot);
+                    ApplyLoadedFavorites(snapshot);
+                    Helpers.DebugLogger.Log($"[MainViewModel] Loaded {snapshot.Count} favorites (snapshot)");
+                }
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.Log($"[MainViewModel] Error loading favorites snapshot: {ex.Message}");
+            }
+
+            Helpers.TaskExtensions.FireAndForget(RefreshFavoritesFromQuickAccessAsync(shownEntries), "RefreshFavorites");
+        }
+
+        private async Task RefreshFavoritesFromQuickAccessAsync(List<Helpers.FavoriteSnapshotEntry>? shownEntries)
+        {
+            var version = _favoritesEditVersion;
+            var perf = Helpers.PerfTrace.Now();
+            List<FavoriteItem> items;
+            try
+            {
+                items = await _favoritesService.LoadFavoritesAsync();
+            }
+            catch (Exception ex)
+            {
+                Helpers.DebugLogger.Log($"[MainViewModel] Error loading favorites: {ex.Message}");
+                if (shownEntries != null) return;
+                items = _favoritesService.GetDefaultFavorites();
+            }
+            Helpers.PerfTrace.Span("Favorites.QuickAccessRead", perf, $"items={items.Count}");
+
+            if (_isCleaningUp) return;
+            if (version != _favoritesEditVersion)
+            {
+                Helpers.DebugLogger.Log("[MainViewModel] Favorites changed during Quick Access read — keeping current list");
+                return;
+            }
+
+            var loadedEntries = ToSnapshotEntries(items);
+            _ = Task.Run(() => _favoritesService.SaveSnapshot(loadedEntries));
+            if (Helpers.FavoritesSnapshot.SameEntries(shownEntries, loadedEntries))
+            {
+                Helpers.DebugLogger.Log($"[MainViewModel] Favorites unchanged since snapshot ({items.Count})");
+                return;
+            }
+
+            ApplyLoadedFavorites(items);
+            Helpers.DebugLogger.Log($"[MainViewModel] Loaded {items.Count} favorites");
+        }
+
+        private static List<Helpers.FavoriteSnapshotEntry> ToSnapshotEntries(IEnumerable<FavoriteItem> items)
+            => items.Select(f => new Helpers.FavoriteSnapshotEntry(f.Name, f.Path)).ToList();
+
+        private void ApplyLoadedFavorites(List<FavoriteItem> items)
+        {
+            _applyingLoadedFavorites = true;
+            try
+            {
                 Favorites.Clear();
                 foreach (var item in items)
                 {
                     Favorites.Add(item);
                 }
                 LocalizeFavoriteNames();
-                Helpers.DebugLogger.Log($"[MainViewModel] Loaded {items.Count} favorites");
             }
-            catch (Exception ex)
+            finally
             {
-                Helpers.DebugLogger.Log($"[MainViewModel] Error loading favorites: {ex.Message}");
+                _applyingLoadedFavorites = false;
             }
         }
 
@@ -1065,6 +1141,8 @@ namespace OrielFolder.ViewModels
                 return;
 
             var updated = _favoritesService.AddFavorite(path, Favorites.ToList());
+            var updatedEntries = ToSnapshotEntries(updated);
+            _ = Task.Run(() => _favoritesService.SaveSnapshot(updatedEntries));
 
             Favorites.Clear();
             foreach (var item in updated)
@@ -1077,6 +1155,8 @@ namespace OrielFolder.ViewModels
         public void RemoveFromFavorites(string path)
         {
             var updated = _favoritesService.RemoveFavorite(path, Favorites.ToList());
+            var updatedEntries = ToSnapshotEntries(updated);
+            _ = Task.Run(() => _favoritesService.SaveSnapshot(updatedEntries));
 
             Favorites.Clear();
             foreach (var item in updated)

@@ -1,4 +1,4 @@
-using CommunityToolkit.WinUI.Controls;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using OrielFolder.Helpers;
@@ -52,6 +52,9 @@ public sealed partial class DetailsModeView
 
     private bool IsDetailColumnVisible(string id) => id switch
     {
+        "Name" => _nameColumnVisible,
+        "CloudStatus" => _cloudStatusColumnVisible,
+        "ColorTag" => _colorTagColumnVisible,
         "Location" => _showLocationColumn,
         "DateModified" => _dateColumnVisible,
         "Type" => _typeColumnVisible,
@@ -69,11 +72,15 @@ public sealed partial class DetailsModeView
         RebuildColumnHeader();
     }
 
+    // Empty column after the last visible column. It takes the free space once Name has a
+    // fixed width, so resizing a column moves every column to its right (Explorer style).
+    private readonly ColumnDefinition _fillerColumn = new() { Width = new GridLength(0) };
+
     private void RebuildColumnHeader()
     {
         _headerWidthsDirty = true;
-        foreach (var splitter in HeaderGrid.Children.OfType<GridSplitter>().ToList())
-            HeaderGrid.Children.Remove(splitter);
+        foreach (var separator in HeaderGrid.Children.OfType<Grid>().Where(g => g.Tag is ColumnSeparatorTag).ToList())
+            HeaderGrid.Children.Remove(separator);
         HeaderGrid.ColumnDefinitions.Clear();
         var visible = _columnOrder.Where(IsDetailColumnVisible).ToArray();
         foreach (var id in _columnOrder)
@@ -84,21 +91,205 @@ public sealed partial class DetailsModeView
             Grid.SetColumn(column.Header, HeaderGrid.ColumnDefinitions.Count);
             HeaderGrid.ColumnDefinitions.Add(column.Definition);
             if (i == visible.Length - 1) continue;
+            // 2 px gap column (rows reserve the same 2 px as a right margin on each cell).
             HeaderGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2) });
-            var splitter = new GridSplitter
-            {
-                Width = 2,
-                Padding = new Thickness(0),
-                ResizeDirection = GridSplitter.GridResizeDirection.Columns,
-                ResizeBehavior = GridSplitter.GridResizeBehavior.PreviousAndNext,
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
-                Opacity = 0.3
-            };
-            Grid.SetColumn(splitter, HeaderGrid.ColumnDefinitions.Count - 1);
-            HeaderGrid.Children.Add(splitter);
+            var separator = CreateColumnSeparator(visible[i]);
+            Grid.SetColumn(separator, HeaderGrid.ColumnDefinitions.Count - 1);
+            HeaderGrid.Children.Add(separator);
         }
+        HeaderGrid.ColumnDefinitions.Add(_fillerColumn);
+        UpdateFillerColumn();
         UpdateAllVisibleContainerWidths();
+    }
+
+    private sealed record ColumnSeparatorTag(string LeftColumn);
+
+    /// <summary>
+    /// A visible 1 px line with an 8 px drag area centered on the 2 px gap column.
+    /// Dragging it resizes only the column on its left.
+    /// </summary>
+    private Grid CreateColumnSeparator(string leftColumn)
+    {
+        var line = new Border { Style = (Style)Resources["ColumnSeparatorLineStyle"] };
+        var separator = new Grid
+        {
+            Tag = new ColumnSeparatorTag(leftColumn),
+            Margin = new Thickness(-3, 0, -3, 0),
+            Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent),
+            Children = { line }
+        };
+        Canvas.SetZIndex(separator, 1);
+        CursorHelper.SetCursor(separator, Microsoft.UI.Input.InputSystemCursorShape.SizeWestEast);
+        separator.PointerEntered += (_, _) => line.Opacity = 1;
+        separator.PointerExited += (_, _) => { if (!ReferenceEquals(_resizeSeparator, separator)) line.Opacity = 0.55; };
+        separator.PointerPressed += OnSeparatorPointerPressed;
+        separator.PointerMoved += OnSeparatorPointerMoved;
+        separator.PointerReleased += OnSeparatorPointerReleased;
+        separator.PointerCaptureLost += OnSeparatorPointerCaptureLost;
+        return separator;
+    }
+
+    private Grid? _resizeSeparator;
+    private ColumnDefinition? _resizeColumn;
+    private double _resizeStartX;
+    private double _resizeStartWidth;
+
+    private void OnSeparatorPointerPressed(object sender, PointerRoutedEventArgs args)
+    {
+        if (sender is not Grid { Tag: ColumnSeparatorTag tag } separator
+            || !args.GetCurrentPoint(separator).Properties.IsLeftButtonPressed
+            || !_detailColumns.TryGetValue(tag.LeftColumn, out var column)) return;
+        // From now on every column keeps its own width; free space goes to the filler.
+        FixNameColumnWidth();
+        _resizeSeparator = separator;
+        _resizeColumn = column.Definition;
+        _resizeStartX = args.GetCurrentPoint(this).Position.X;
+        _resizeStartWidth = column.Definition.ActualWidth;
+        separator.CapturePointer(args.Pointer);
+        args.Handled = true;
+    }
+
+    private void OnSeparatorPointerMoved(object sender, PointerRoutedEventArgs args)
+    {
+        if (_resizeColumn == null || !ReferenceEquals(sender, _resizeSeparator)) return;
+        double delta = args.GetCurrentPoint(this).Position.X - _resizeStartX;
+        double width = DetailsColumnLayout.ResizeWidth(_resizeStartWidth, delta, _resizeColumn.MinWidth);
+        if (!_resizeColumn.Width.IsAbsolute || Math.Abs(_resizeColumn.Width.Value - width) > 0.5)
+            _resizeColumn.Width = new GridLength(width);
+        args.Handled = true;
+    }
+
+    private void OnSeparatorPointerReleased(object sender, PointerRoutedEventArgs args)
+    {
+        if (!ReferenceEquals(sender, _resizeSeparator)) return;
+        ((UIElement)sender).ReleasePointerCapture(args.Pointer);
+        EndColumnResize();
+        args.Handled = true;
+    }
+
+    private void OnSeparatorPointerCaptureLost(object sender, PointerRoutedEventArgs args)
+    {
+        if (ReferenceEquals(sender, _resizeSeparator)) EndColumnResize();
+    }
+
+    private void EndColumnResize()
+    {
+        if (_resizeSeparator?.Children.FirstOrDefault() is Border line) line.Opacity = 0.55;
+        bool resized = _resizeColumn != null;
+        _resizeSeparator = null;
+        _resizeColumn = null;
+        if (resized) SaveColumnWidths();
+    }
+
+    /// <summary>Turns the stretching Name column into a fixed width (its current width).</summary>
+    private void FixNameColumnWidth()
+    {
+        if (!NameColumnDef.Width.IsStar) return;
+        double width = NameColumnDef.ActualWidth > 0 ? NameColumnDef.ActualWidth : NameColumnDef.MinWidth;
+        NameColumnDef.Width = new GridLength(Math.Round(Math.Max(width, NameColumnDef.MinWidth)));
+        UpdateFillerColumn();
+    }
+
+    private void UpdateFillerColumn()
+    {
+        var width = DetailsColumnLayout.NeedsFiller(IsDetailColumnVisible("Name"), NameColumnDef.Width.IsStar)
+            ? new GridLength(1, GridUnitType.Star)
+            : new GridLength(0);
+        if (_fillerColumn.Width != width) _fillerColumn.Width = width;
+    }
+
+    // ── Saved widths (shared by every Details view, like the column order) ──
+
+    private static event Action<string>? DetailsColumnWidthsChanged;
+
+    private void SaveColumnWidths()
+    {
+        var widths = _detailColumns
+            .Where(pair => DetailsColumnLayout.IsToggleable(pair.Key) && pair.Value.Definition.Width.IsAbsolute)
+            .Select(pair => new KeyValuePair<string, double>(pair.Key, pair.Value.Definition.Width.Value));
+        string saved = DetailsColumnLayout.SerializeWidths(widths);
+        if (_localSettings != null)
+        {
+            var composite = _localSettings.Values["DetailsViewSort"] as ApplicationDataCompositeValue
+                ?? new ApplicationDataCompositeValue();
+            composite["ColumnWidths"] = saved;
+            _localSettings.Values["DetailsViewSort"] = composite;
+        }
+        DebugLogger.Log($"[DetailsColumns] Widths {saved}");
+        DetailsColumnWidthsChanged?.Invoke(saved);
+    }
+
+    private void RestoreColumnWidths()
+    {
+        string? saved = null;
+        if (_localSettings?.Values["DetailsViewSort"] is ApplicationDataCompositeValue composite
+            && composite.TryGetValue("ColumnWidths", out var value)) saved = value as string;
+        ApplyColumnWidths(saved);
+    }
+
+    private void OnDetailsColumnWidthsChanged(string saved)
+    {
+        if (!DispatcherQueue.HasThreadAccess)
+        {
+            DispatcherQueue.TryEnqueue(() => OnDetailsColumnWidthsChanged(saved));
+            return;
+        }
+        if (_isCleanedUp || _resizeColumn != null) return;
+        ApplyColumnWidths(saved);
+    }
+
+    private void ApplyColumnWidths(string? saved)
+    {
+        foreach (var pair in DetailsColumnLayout.ParseWidths(saved))
+        {
+            if (!_detailColumns.TryGetValue(pair.Key, out var column)) continue;
+            double width = Math.Max(pair.Value, column.Definition.MinWidth);
+            if (!column.Definition.Width.IsAbsolute || column.Definition.Width.Value != width)
+                column.Definition.Width = new GridLength(width);
+        }
+        UpdateFillerColumn();
+    }
+
+    // ── Horizontal scrolling: the header follows the list ──
+
+    private ScrollViewer? _listScrollViewer;
+
+    private void OnHeaderScrollerSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        // The header fills at least the visible width; wider columns make it (and the rows) scroll.
+        if (HeaderGrid.MinWidth != e.NewSize.Width) HeaderGrid.MinWidth = e.NewSize.Width;
+        AttachListScrollViewer();
+    }
+
+    private void AttachListScrollViewer()
+    {
+        if (_listScrollViewer != null) return;
+        _listScrollViewer = VisualTreeHelpers.FindChild<ScrollViewer>(DetailsListView);
+        if (_listScrollViewer == null) return;
+        _listScrollViewer.ViewChanging += OnListViewChanging;
+        _listScrollViewer.ViewChanged += OnListViewChanged;
+    }
+
+    private void DetachListScrollViewer()
+    {
+        if (_listScrollViewer == null) return;
+        _listScrollViewer.ViewChanging -= OnListViewChanging;
+        _listScrollViewer.ViewChanged -= OnListViewChanged;
+        _listScrollViewer = null;
+    }
+
+    private void OnListViewChanging(object? sender, ScrollViewerViewChangingEventArgs e)
+        => SyncHeaderOffset(e.NextView.HorizontalOffset);
+
+    private void OnListViewChanged(object? sender, ScrollViewerViewChangedEventArgs e)
+    {
+        if (_listScrollViewer != null) SyncHeaderOffset(_listScrollViewer.HorizontalOffset);
+    }
+
+    private void SyncHeaderOffset(double offset)
+    {
+        if (Math.Abs(HeaderScroller.HorizontalOffset - offset) > 0.5)
+            HeaderScroller.ChangeView(offset, null, null, true);
     }
 
     private void RegisterColumnWidthCallbacks()

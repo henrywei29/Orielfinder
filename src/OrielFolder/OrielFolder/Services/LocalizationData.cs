@@ -566,6 +566,8 @@ namespace OrielFolder.Services
             ("FileType", "File type", "파일 종류", "ファイルの種類", "文件类型", "檔案類型", "Dateityp", "Tipo de archivo", "Type de fichier", "Tipo de arquivo"),
             ("FilePath", "File path", "파일 경로", "ファイルパス", "文件路径", "檔案路徑", "Dateipfad", "Ruta de archivo", "Chemin du fichier", "Caminho do arquivo"),
             ("ColumnGit", "Git", "Git", "Git", "Git", "Git", "Git", "Git", "Git", "Git"),
+            ("ColumnGitStatus", "Git status", "Git 상태", "Git の状態", "Git 状态", "Git 狀態", "Git-Status", "Estado de Git", "Statut Git", "Status do Git"),
+            ("ShowColumns", "Show columns", "열 표시", "列を表示", "显示列", "顯示欄", "Spalten anzeigen", "Mostrar columnas", "Afficher les colonnes", "Mostrar colunas"),
             ("FilterName", "Filter by name", "이름으로 필터", "名前でフィルター", "按名称筛选", "依名稱篩選", "Nach Name filtern", "Filtrar por nombre", "Filtrer par nom", "Filtrar por nome"),
             ("FilterDate", "Filter by date", "날짜로 필터", "日付でフィルター", "按日期筛选", "依日期篩選", "Nach Datum filtern", "Filtrar por fecha", "Filtrer par date", "Filtrar por data"),
             ("FilterSize", "Filter by size", "크기로 필터", "サイズでフィルター", "按大小筛选", "依大小篩選", "Nach Größe filtern", "Filtrar por tamaño", "Filtrer par taille", "Filtrar por tamanho"),

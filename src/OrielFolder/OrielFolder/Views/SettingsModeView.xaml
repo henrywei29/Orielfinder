@@ -1268,22 +1268,8 @@
                                         <TextBlock x:Name="FontLabel" Text="폰트" Style="{StaticResource SettingsCardLabel}" />
                                         <TextBlock x:Name="FontDesc" Text="파일 이름 표시에 사용할 폰트" Style="{StaticResource SettingsCardDesc}" />
                                     </StackPanel>
-                                    <ComboBox x:Name="FontCombo" Grid.Column="2" SelectedIndex="0" MinWidth="160" VerticalAlignment="Center">
-                                        <!-- Sans-serif -->
-                                        <ComboBoxItem Content="Segoe UI Variable" />
-                                        <ComboBoxItem Content="Pretendard" />
-                                        <ComboBoxItem Content="Arial" />
-                                        <ComboBoxItem Content="Verdana" />
-                                        <ComboBoxItem Content="Calibri" />
-                                        <!-- Monospace -->
-                                        <ComboBoxItem Content="Cascadia Code" />
-                                        <ComboBoxItem Content="Consolas" />
-                                        <ComboBoxItem Content="Courier New" />
-                                        <!-- CJK-optimized -->
-                                        <ComboBoxItem Content="Malgun Gothic" />
-                                        <ComboBoxItem Content="Microsoft YaHei UI" />
-                                        <ComboBoxItem Content="Yu Gothic UI" />
-                                    </ComboBox>
+                                    <!-- 항목은 Helpers/AppFontCatalog.Options 에서 코드로 생성 -->
+                                    <ComboBox x:Name="FontCombo" Grid.Column="2" MinWidth="160" VerticalAlignment="Center" />
                                 </Grid>
                             </Border>
                         </StackPanel>
@@ -2080,6 +2066,48 @@
                                                 <TextBlock Text="Cactus (orioncactus) — SIL Open Font License 1.1" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" />
                                             </StackPanel>
                                             <TextBlock x:Name="BundledText" Grid.Column="1" Text="번들 포함" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="{ThemeResource OrielFolderContentBrush}" CornerRadius="8" Padding="12,8" Margin="48,0,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Inter" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OrielFolderTextPrimaryBrush}" />
+                                                <TextBlock Text="The Inter Project Authors (rsms) — SIL Open Font License 1.1" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" />
+                                            </StackPanel>
+                                            <TextBlock x:Name="BundledTextInter" Grid.Column="1" Text="번들 포함" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="{ThemeResource OrielFolderContentBrush}" CornerRadius="8" Padding="12,8" Margin="48,0,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Geist" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OrielFolderTextPrimaryBrush}" />
+                                                <TextBlock Text="The Geist Project Authors (Vercel) — SIL Open Font License 1.1" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" />
+                                            </StackPanel>
+                                            <TextBlock x:Name="BundledTextGeist" Grid.Column="1" Text="번들 포함" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="{ThemeResource OrielFolderContentBrush}" CornerRadius="8" Padding="12,8" Margin="48,0,0,0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="2">
+                                                <TextBlock Text="Noto Sans SC (思源黑体)" FontSize="13" FontWeight="SemiBold" Foreground="{ThemeResource OrielFolderTextPrimaryBrush}" />
+                                                <TextBlock Text="Adobe / Google (Source Han Sans) — SIL Open Font License 1.1" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" />
+                                            </StackPanel>
+                                            <TextBlock x:Name="BundledTextNotoSansSC" Grid.Column="1" Text="번들 포함" FontSize="11" Foreground="{ThemeResource OrielFolderTextTertiaryBrush}" VerticalAlignment="Center" />
                                         </Grid>
                                     </Border>
                                 </StackPanel>

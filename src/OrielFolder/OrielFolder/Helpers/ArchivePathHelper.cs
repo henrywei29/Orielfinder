@@ -301,4 +301,85 @@ public static class ArchivePathHelper
 
         return null;
     }
+
+    /// <summary>
+    /// The location one level up from an <c>archive://</c> path, for the Up button / Backspace
+    /// in the single-folder views (Details / List / Icon).
+    ///
+    /// <see cref="System.IO.Path.GetDirectoryName"/> cannot be used on these paths: it mangles
+    /// the "archive://" prefix, so the old NavigateUp ended up checking a non-existent
+    /// directory and silently did nothing while inside an archive.
+    ///
+    /// archive://D:\a\b.zip/x/y → archive://D:\a\b.zip/x
+    /// archive://D:\a\b.zip/x   → archive://D:\a\b.zip
+    /// archive://D:\a\b.zip     → D:\a  (the folder holding the archive)
+    /// Returns null if <paramref name="archiveUri"/> is not an archive path or has no parent.
+    /// </summary>
+    public static string? GetParentPath(string archiveUri)
+    {
+        if (!IsArchivePath(archiveUri)) return null;
+
+        var (archiveFilePath, internalPath) = Parse(archiveUri);
+        var trimmedInternal = internalPath.Trim('/', '\\');
+
+        if (trimmedInternal.Length == 0)
+        {
+            var dir = System.IO.Path.GetDirectoryName(archiveFilePath);
+            return string.IsNullOrEmpty(dir) ? null : dir;
+        }
+
+        var lastSep = trimmedInternal.LastIndexOfAny(new[] { '/', '\\' });
+        var parentInternal = lastSep < 0 ? string.Empty : trimmedInternal.Substring(0, lastSep);
+        return Combine(archiveFilePath, parentInternal);
+    }
+
+    /// <summary>
+    /// Whether the toolbar / context-menu "Extract" command applies to this path: a real
+    /// archive file on a local or UNC file system. Entries inside an opened archive
+    /// (archive://) and remote URIs (ftp://, sftp://…) cannot be handed to ExtractOperation.
+    /// </summary>
+    public static bool IsExtractableArchiveFile(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return false;
+        if (IsArchivePath(path)) return false;
+        if (path.Contains("://", StringComparison.Ordinal)) return false;
+        // Cheap extension test first: this runs on every selection change (toolbar state),
+        // and IsArchiveFile touches the disk (Directory.Exists) for every path it sees.
+        if (!HasArchiveExtension(path)) return false;
+        return IsArchiveFile(path);
+    }
+
+    private static bool HasArchiveExtension(string path)
+    {
+        foreach (var ext in CompoundExtensions)
+        {
+            if (path.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        var extension = System.IO.Path.GetExtension(path);
+        return !string.IsNullOrEmpty(extension) && ArchiveExtensions.Contains(extension);
+    }
+
+    /// <summary>
+    /// The folder to extract <paramref name="archivePath"/> into under <paramref name="parentDir"/>:
+    /// "&lt;archive base name&gt;", or "&lt;base name&gt; (1)", "(2)"… when that name is already taken
+    /// by a folder <i>or</i> a file (a same-named file would make CreateDirectory throw).
+    /// <paramref name="exists"/> is injectable for tests; it defaults to the real file system.
+    /// </summary>
+    public static string GetUniqueExtractDestination(string parentDir, string archivePath, Func<string, bool>? exists = null)
+    {
+        exists ??= p => System.IO.Directory.Exists(p) || System.IO.File.Exists(p);
+
+        var folderName = GetArchiveBaseName(archivePath);
+        if (string.IsNullOrEmpty(folderName)) folderName = "Extracted";
+
+        var destPath = System.IO.Path.Combine(parentDir, folderName);
+        int count = 1;
+        while (exists(destPath))
+        {
+            destPath = System.IO.Path.Combine(parentDir, $"{folderName} ({count})");
+            count++;
+        }
+        return destPath;
+    }
 }

@@ -62,6 +62,11 @@ namespace OrielFolder.Views
         public IconModeView()
         {
             this.InitializeComponent();
+            // [Perf] FolderLoad.FirstRow: first row realized after a folder load. Registered ahead of
+            // OnContainerContentChanging (XAML), which marks the args handled and stops later handlers.
+            IconGridView.ContainerContentChanging -= OnContainerContentChanging;
+            IconGridView.ContainerContentChanging += (_, a) => { if (!a.InRecycleQueue && a.Phase == 0) Helpers.PerfTrace.FirstRow("Icon"); };
+            IconGridView.ContainerContentChanging += OnContainerContentChanging;
 
             this.Loaded += (s, e) =>
             {
@@ -624,17 +629,24 @@ namespace OrielFolder.Views
 
         // Ctrl+Mouse Wheel view mode cycling is handled globally by MainWindow.OnGlobalPointerWheelChanged
 
+        private Thickness? _itemStyleMargin; // Margin of the ItemContainerStyle we last assigned
+
         public void ApplyDensity(string density)
         {
             var margin = new Thickness(2 + Helpers.FontScaleService.GetFileSpacing(density));
 
             if (IconGridView != null)
             {
-                var baseStyle = (Style)Application.Current.Resources["ListViewItemStyle"];
-                var style = new Style(typeof(GridViewItem)) { BasedOn = baseStyle };
-                style.Setters.Add(new Setter(GridViewItem.MarginProperty, margin));
-                style.Setters.Add(new Setter(GridViewItem.MinHeightProperty, 0.0));
-                IconGridView.ItemContainerStyle = style;
+                // A new style rebuilds every realized item, so replace it only when the spacing changes.
+                if (_itemStyleMargin != margin)
+                {
+                    var baseStyle = (Style)Application.Current.Resources["ListViewItemStyle"];
+                    var style = new Style(typeof(GridViewItem)) { BasedOn = baseStyle };
+                    style.Setters.Add(new Setter(GridViewItem.MarginProperty, margin));
+                    style.Setters.Add(new Setter(GridViewItem.MinHeightProperty, 0.0));
+                    IconGridView.ItemContainerStyle = style;
+                    _itemStyleMargin = margin;
+                }
                 if (_currentIconSize == ViewMode.IconSmall && IconGridView.ItemsPanelRoot is Panel panel)
                     foreach (var child in panel.Children)
                         if (child is GridViewItem item && item.ContentTemplateRoot is Grid row)

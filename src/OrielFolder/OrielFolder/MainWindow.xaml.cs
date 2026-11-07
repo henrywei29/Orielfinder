@@ -102,6 +102,7 @@ namespace OrielFolder
         internal void HandleRedirectedFolder(string folderPath)
         {
             if (_isClosed || ViewModel == null) return;
+            Helpers.PerfTrace.WatchFrames(2400); // Debug builds only: frame/GC timing of the new tab
             try
             {
                 // 새 탭 추가 + Miller 패널 생성
@@ -486,7 +487,9 @@ namespace OrielFolder
 
         public MainWindow()
         {
+            var perfCtor = Helpers.PerfTrace.Now();
             this.InitializeComponent();
+            Helpers.PerfTrace.Span("Startup.MainWindow.InitializeComponent", perfCtor);
 
             // FontScaleService 싱글톤은 App.xaml 에 <helpers:FontScaleService x:Key="FontScale"/>
             // 로 선언되어 XAML 파서가 Application.Resources 에 등록함. XAML {StaticResource FontScale}
@@ -505,7 +508,9 @@ namespace OrielFolder
             RightPaneContainer.AddHandler(UIElement.PointerPressedEvent,
                 new Microsoft.UI.Xaml.Input.PointerEventHandler(OnRightPanePointerPressed), true);
 
+            var perfVm = Helpers.PerfTrace.Now();
             ViewModel = App.Current.Services.GetRequiredService<MainViewModel>();
+            Helpers.PerfTrace.Span("Startup.MainViewModel.Ctor", perfVm);
             _contextMenuService = App.Current.Services.GetRequiredService<Services.ContextMenuService>();
             _loc = App.Current.Services.GetRequiredService<Services.LocalizationService>();
             _settings = App.Current.Services.GetRequiredService<Services.SettingsService>();
@@ -648,7 +653,6 @@ namespace OrielFolder
             ListView.ViewModel = ViewModel.Explorer;
             IconView.ViewModel = ViewModel.Explorer;
             HomeView.MainViewModel = ViewModel;
-            SettingsView.BackRequested += (s, e) => CloseCurrentSettingsTab();
             LogView.BackRequested += (s, e) => CloseCurrentActionLogTab();
 
             // AddressBarControl에 PathSegments/CurrentPath 바인딩
@@ -834,11 +838,15 @@ namespace OrielFolder
             }
 
             // Initialize preview panels
+            var perfPreview = Helpers.PerfTrace.Now();
             InitializePreviewPanels();
+            Helpers.PerfTrace.Span("Startup.MainWindow.InitializePreviewPanels", perfPreview);
 
             // Apply saved settings
             ApplyTheme(_settings.Theme);
+            var perfFont = Helpers.PerfTrace.Now();
             ApplyFontFamily(_settings.FontFamily);
+            Helpers.PerfTrace.Span("Startup.MainWindow.ApplyFontFamily", perfFont);
             ApplyDensity(_settings.Density);
             ApplyIconFontScale(_settings.IconFontScale);
             _settings.SettingChanged += OnSettingChanged;
@@ -857,6 +865,7 @@ namespace OrielFolder
             {
                 rootElement.Loaded += (s, e) =>
                 {
+                    Helpers.PerfTrace.Mark("Startup.MainWindow.Loaded");
                     if (_pendingTearOff != null)
                     {
                         // ── Tear-off mode: load single tab from DTO, skip session restore ──
@@ -960,23 +969,52 @@ namespace OrielFolder
                     if (!_isTearOffWindow && _settings.RememberWindowPosition)
                     {
                         RestoreWindowPlacement();
+
+                        // Uncloak as soon as one frame with the laid-out content has been rendered.
+                        // This used to wait for a Low-priority dispatcher slot, which a cold start that
+                        // opens a folder keeps busy for ~1 s (folder loading, row realization), so the
+                        // window stayed invisible long after its content was ready.
+                        var revealGate = new Helpers.StartupRevealGate();
+                        void Uncloak(string trigger)
+                        {
+                            if (_isClosed) return;
+                            if (_settings.RememberWindowPosition)
+                                RestoreWindowPlacement();
+
+                            // Uncloak — window is now at the correct size
+                            int cloakOff = 0;
+                            Helpers.NativeMethods.DwmSetWindowAttribute(
+                                _hwnd, Helpers.NativeMethods.DWMWA_CLOAK, ref cloakOff, sizeof(int));
+                            Helpers.PerfTrace.Mark($"Startup.Uncloaked ({trigger})");
+                            Helpers.PerfTrace.WatchFrames(3000); // Debug builds only: frame/GC timing after the window appears
+                        }
+
+                        // Rendering is raised before each frame: the 2nd callback means the 1st frame
+                        // after Loaded (the restored session) has been presented.
+                        EventHandler<object>? onRendering = null;
+                        onRendering = (_, _) =>
+                        {
+                            if (!revealGate.OnFrame()) return;
+                            Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
+                            Uncloak("frame");
+                        };
+                        Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += onRendering;
+
+                        // Fallback (unchanged behavior): idle dispatcher slot.
                         DispatcherQueue.TryEnqueue(
                             Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
                             () =>
                             {
-                                if (!_isClosed && _settings.RememberWindowPosition)
-                                    RestoreWindowPlacement();
-
-                                // Uncloak — window is now at the correct size
-                                int cloakOff = 0;
-                                Helpers.NativeMethods.DwmSetWindowAttribute(
-                                    _hwnd, Helpers.NativeMethods.DWMWA_CLOAK, ref cloakOff, sizeof(int));
+                                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
+                                if (revealGate.TryRevealNow()) Uncloak("idle");
                             });
                     }
 
                     // ── Normal startup: restore session tabs ──
+                    var perfTabs = Helpers.PerfTrace.Now();
                     RestorePreviewState();
                     ViewModel.LoadTabsFromSettings();
+                    Helpers.PerfTrace.Span("Startup.LoadTabsFromSettings", perfTabs);
 
                     if (ViewModel.IsSplitViewEnabled)
                     {
@@ -1074,6 +1112,7 @@ namespace OrielFolder
                     // 시작 인자까지 소비했다. 그 사이 도착해 보관된 리다이렉트를 처리하게 한다.
                     // App 쪽 재생은 DispatcherQueue에 넣으므로 이 Loaded 처리가 끝난 뒤에 실행된다.
                     ((App)Application.Current).OnMainWindowStartupComplete();
+                    Helpers.PerfTrace.Mark("Startup.StartupComplete");
 
                     // ── Populate Favorites Tree and observe changes ──
                     ApplyFavoritesTreeMode(_settings.ShowFavoritesTree);
@@ -2959,7 +2998,9 @@ namespace OrielFolder
             ListTabsHost.Visibility = mode == ViewMode.List ? Visibility.Visible : Visibility.Collapsed;
             IconTabsHost.Visibility = Helpers.ViewModeExtensions.IsIconMode(mode) ? Visibility.Visible : Visibility.Collapsed;
             HomeView.Visibility = mode == ViewMode.Home ? Visibility.Visible : Visibility.Collapsed;
-            SettingsView.Visibility = mode == ViewMode.Settings ? Visibility.Visible : Visibility.Collapsed;
+            if (mode == ViewMode.Settings) EnsureSettingsView();
+            if (SettingsView != null)
+                SettingsView.Visibility = mode == ViewMode.Settings ? Visibility.Visible : Visibility.Collapsed;
             LogView.Visibility = mode == ViewMode.ActionLog ? Visibility.Visible : Visibility.Collapsed;
             RecycleBinView.Visibility = mode == ViewMode.RecycleBin ? Visibility.Visible : Visibility.Collapsed;
             if (mode == ViewMode.RecycleBin)
@@ -2967,7 +3008,7 @@ namespace OrielFolder
                 SetSpecialModeAddressBar(ViewMode.RecycleBin);
                 _ = LoadRecycleBinViewAsync();
             }
-            if (mode == ViewMode.Settings)
+            if (mode == ViewMode.Settings && SettingsView != null)
             {
                 SettingsView.RefreshSettings();
                 // Settings가 Visible이 된 직후 → 절대값 기반이므로 항상 정확
@@ -3075,6 +3116,7 @@ namespace OrielFolder
             SplitViewButton.IsEnabled = true; // 홈에서도 분할뷰 토글 가능
             CopyPathButton.IsEnabled = !isNonExplorerMode;
             SearchBox.IsEnabled = !isNonExplorerMode;
+            ToolbarExtractButton.IsEnabled = false;
             ToolbarCutButton.IsEnabled = false;
             ToolbarCopyButton.IsEnabled = false;
             ToolbarPasteButton.IsEnabled = false;
@@ -4927,6 +4969,7 @@ namespace OrielFolder
         /// </summary>
         private void OnMillerContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
+            if (!args.InRecycleQueue && args.Phase == 0) Helpers.PerfTrace.FirstRow("Miller");
             // 긴급 임시 가드: STATUS_STOWED_EXCEPTION 차단
             // 컨테이너 unload race / unloaded folder VM 접근 / stale dict race 등
             // ContainerContentChanging 처리 도중 발생 가능한 모든 throw를 흡수.
@@ -5553,7 +5596,12 @@ namespace OrielFolder
 
         private void UpdateToolbarButtonStates()
         {
-            bool hasSelection = ViewModel?.ActiveExplorer != null && GetCurrentSelectedItems().Any();
+            var selectedItems = ViewModel?.ActiveExplorer != null
+                ? GetCurrentSelectedItems()
+                : new List<FileSystemViewModel>();
+            bool hasSelection = selectedItems.Count > 0;
+            ToolbarExtractButton.IsEnabled = hasSelection
+                && selectedItems.All(i => i is FileViewModel && Helpers.ArchivePathHelper.IsExtractableArchiveFile(i.Path));
             // Issue #62: 외부(탐색기 등)에서 복사한 파일도 붙여넣을 수 있으므로 시스템
             // 클립보드의 파일 목록(CF_HDROP)까지 확인한다. 내부만 보면 탐색기에서 복사한
             // 상태에서 붙여넣기 버튼이 비활성으로 보였다.
@@ -6691,25 +6739,23 @@ namespace OrielFolder
 
         async void Services.IContextMenuHost.PerformExtractHere(string zipPath)
         {
+            await ExtractHereAsync(zipPath);
+        }
+
+        /// <summary>
+        /// "여기에 압축 풀기" 본체. 우클릭 메뉴와 툴바 압축 풀기 버튼이 함께 쓴다.
+        /// 툴바에서 여러 개를 풀 때 순서대로 await해야 대상 폴더 이름 중복 검사가 서로 겹치지 않는다.
+        /// </summary>
+        internal async Task ExtractHereAsync(string zipPath)
+        {
             if (string.IsNullOrEmpty(zipPath)) return;
 
             try
             {
                 string parentDir = System.IO.Path.GetDirectoryName(zipPath)!;
-                // Issue #66: 복합 확장자를 인식한다. GetFileNameWithoutExtension은 마지막
-                // 확장자만 떼어 "backup.tar.gz"를 "backup.tar"로 만드는데, 폴더 이름으로도
-                // 틀렸고 바로 옆에 있기 마련인 "backup.tar" 파일과 충돌한다.
-                string folderName = Helpers.ArchivePathHelper.GetArchiveBaseName(zipPath);
-                string destPath = System.IO.Path.Combine(parentDir, folderName);
-
-                int count = 1;
-                // 같은 이름의 파일도 비켜간다. 디렉터리만 확인하면 동명 파일이 있을 때
-                // 검사를 통과한 뒤 CreateDirectory에서 IOException으로 터진다(실측 확인).
-                while (System.IO.Directory.Exists(destPath) || System.IO.File.Exists(destPath))
-                {
-                    destPath = System.IO.Path.Combine(parentDir, $"{folderName} ({count})");
-                    count++;
-                }
+                // Issue #66: 복합 확장자 인식 + 같은 이름의 폴더/파일 모두 비켜가기
+                // (GetUniqueExtractDestination에 정리, 단위 테스트 있음).
+                string destPath = Helpers.ArchivePathHelper.GetUniqueExtractDestination(parentDir, zipPath);
 
                 var op = new OrielFolder.Services.FileOperations.ExtractOperation(zipPath, destPath, _settings.ZipLegacyCodePage);
                 // Issue #63: 컨텍스트 메뉴에서 호출되면 포커스가 MenuFlyoutItem에 있어
@@ -6744,20 +6790,9 @@ namespace OrielFolder
                 var folder = await picker.PickSingleFolderAsync();
                 if (folder == null) return;
 
-                // Issue #66: 복합 확장자를 인식한다. GetFileNameWithoutExtension은 마지막
-                // 확장자만 떼어 "backup.tar.gz"를 "backup.tar"로 만드는데, 폴더 이름으로도
-                // 틀렸고 바로 옆에 있기 마련인 "backup.tar" 파일과 충돌한다.
-                string folderName = Helpers.ArchivePathHelper.GetArchiveBaseName(zipPath);
-                string destPath = System.IO.Path.Combine(folder.Path, folderName);
-
-                int count = 1;
-                // 같은 이름의 파일도 비켜간다. 디렉터리만 확인하면 동명 파일이 있을 때
-                // 검사를 통과한 뒤 CreateDirectory에서 IOException으로 터진다(실측 확인).
-                while (System.IO.Directory.Exists(destPath) || System.IO.File.Exists(destPath))
-                {
-                    destPath = System.IO.Path.Combine(folder.Path, $"{folderName} ({count})");
-                    count++;
-                }
+                // Issue #66: 복합 확장자 인식 + 같은 이름의 폴더/파일 모두 비켜가기
+                // (GetUniqueExtractDestination에 정리, 단위 테스트 있음).
+                string destPath = Helpers.ArchivePathHelper.GetUniqueExtractDestination(folder.Path, zipPath);
 
                 var op = new OrielFolder.Services.FileOperations.ExtractOperation(zipPath, destPath, _settings.ZipLegacyCodePage);
                 // Issue #63: 컨텍스트 메뉴에서 호출되면 포커스가 MenuFlyoutItem에 있어

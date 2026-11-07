@@ -860,7 +860,9 @@ namespace OrielFolder.ViewModels
                 SelectedFile = null;
 
                 // ── Phase 3: 모든 폴더 내용을 병렬 로딩 (UI 행 해소) ──
+                var perfPhase3 = Helpers.PerfTrace.Now();
                 await Task.WhenAll(columnVms.Select(vm => vm.EnsureChildrenLoadedAsync()));
+                Helpers.PerfTrace.Span("Nav.ToPath.LoadColumns", perfPhase3, $"columns={columnVms.Length} path='{path}'");
 
                 // ── Phase 4: SelectedChild를 실제 Children 인스턴스로 재매칭 ──
                 // Phase 2에서 설정한 SelectedChild는 Phase 1에서 만든 임시 인스턴스.
@@ -1129,6 +1131,17 @@ namespace OrielFolder.ViewModels
                 var parentUri = prefix + parentRemote;
                 Helpers.DebugLogger.Log($"[NavigateUp] Remote: '{currentPath}' → '{parentUri}'");
                 _ = NavigateToPath(parentUri);
+                return;
+            }
+
+            // 아카이브 경로: GetDirectoryName은 archive:// 프리픽스를 망가뜨려 아래 Directory.Exists
+            // 검사에서 항상 걸러졌다(압축 파일 안에서 "위로"가 아무 동작도 안 함).
+            if (Helpers.ArchivePathHelper.IsArchivePath(currentPath))
+            {
+                var archiveParent = Helpers.ArchivePathHelper.GetParentPath(currentPath);
+                if (string.IsNullOrEmpty(archiveParent)) return;
+                Helpers.DebugLogger.Log($"[NavigateUp] Archive: '{currentPath}' → '{archiveParent}'");
+                _ = NavigateToPath(archiveParent);
                 return;
             }
 

@@ -48,6 +48,10 @@ class Program
         var isRedirect = DecideRedirection();
         if (!isRedirect)
         {
+            // Only the primary instance renders lists; a redirecting process exits right away.
+            long ballast = Helpers.GcBallast.Install();
+            Helpers.DebugLogger.Log($"[Perf] GcBallast {ballast / (1024 * 1024)}MB");
+            Helpers.PerfTrace.Mark("Startup.MainReady");
 #if ORIEL_STANDALONE
             try { Helpers.AppSettings.MigrateLegacyData(); }
             catch (Exception ex) { Helpers.DebugLogger.Log($"[Migration] Legacy data import incomplete: {ex.GetType().Name}"); }
@@ -57,6 +61,7 @@ class Program
                 var context = new Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(
                     Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
                 System.Threading.SynchronizationContext.SetSynchronizationContext(context);
+                Helpers.PerfTrace.Mark("Startup.XamlStarted");
                 new App();
             });
         }

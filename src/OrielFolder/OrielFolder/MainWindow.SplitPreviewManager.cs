@@ -269,6 +269,8 @@ namespace OrielFolder
             Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ToolbarFolderRefreshButton, _loc.Get("Refresh"));
             ToolTipService.SetToolTip(NewFolderButton, _loc.Get("Tooltip_NewFolder"));
             ToolTipService.SetToolTip(NewItemDropdown, _loc.Get("Tooltip_NewFile"));
+            ToolTipService.SetToolTip(ToolbarExtractButton, _loc.Get("ExtractHere"));
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(ToolbarExtractButton, _loc.Get("ExtractHere"));
             ToolTipService.SetToolTip(ToolbarCutButton, _loc.Get("Tooltip_Cut"));
             ToolTipService.SetToolTip(ToolbarCopyButton, _loc.Get("Tooltip_Copy"));
             ToolTipService.SetToolTip(ToolbarPasteButton, _loc.Get("Tooltip_Paste"));
