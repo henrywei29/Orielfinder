@@ -734,6 +734,28 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Launch at startup (packaged startup task) -->
+                            <Border Style="{StaticResource SettingsCardBorder}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Style="{StaticResource CardIconContainer}">
+                                        <FontIcon Glyph="&#xE7E8;" Style="{StaticResource CardIconStyle}" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock x:Name="StartupLaunchLabel" Text="Launch at startup" Style="{StaticResource SettingsCardLabel}" />
+                                        <TextBlock x:Name="StartupLaunchDesc" Text="Start OrielFolder minimized when you sign in to Windows" Style="{StaticResource SettingsCardDesc}" TextWrapping="Wrap" />
+                                        <TextBlock x:Name="StartupLaunchNote" Visibility="Collapsed" Style="{StaticResource SettingsCardDesc}" TextWrapping="Wrap"
+                                                   Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                    </StackPanel>
+                                    <ToggleSwitch x:Name="StartupLaunchToggle" Grid.Column="2" VerticalAlignment="Center" IsOn="False" OnContent="" OffContent=""
+                                                  AutomationProperties.AutomationId="Settings_StartupLaunchToggle" />
+                                </Grid>
+                            </Border>
+
                             <!-- System Tray -->
                             <Border Style="{StaticResource SettingsCardBorder}">
                                 <Grid>

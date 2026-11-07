@@ -987,6 +987,8 @@ namespace OrielFolder
                                 _hwnd, Helpers.NativeMethods.DWMWA_CLOAK, ref cloakOff, sizeof(int));
                             Helpers.PerfTrace.Mark($"Startup.Uncloaked ({trigger})");
                             Helpers.PerfTrace.WatchFrames(3000); // Debug builds only: frame/GC timing after the window appears
+                            // After placement is restored, so the restore cannot undo the minimize.
+                            SendToBackgroundIfStartupLaunch();
                         }
 
                         // Rendering is raised before each frame: the 2nd callback means the 1st frame
@@ -1008,6 +1010,10 @@ namespace OrielFolder
                                 Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= onRendering;
                                 if (revealGate.TryRevealNow()) Uncloak("idle");
                             });
+                    }
+                    else if (!_isTearOffWindow)
+                    {
+                        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, SendToBackgroundIfStartupLaunch);
                     }
 
                     // ── Normal startup: restore session tabs ──
