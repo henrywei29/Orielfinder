@@ -104,6 +104,22 @@ paths:
 - Context menus, Shell "New", tab menus must stay responsive (dedicated `test-*-responsiveness.ps1`,
   `test-tab-menu-dispose-performance.ps1`, `test-workspace-activation-performance.ps1`).
 - Thumbnails are produced by the out-of-process `OrielFolder.Thumbs` worker; never decode large images on the UI thread.
+- GC and XAML element count (measured 2026-11-07, Debug, 6 System32 tabs): WinUI reports each XAML element's
+  native memory via `GC.AddMemoryPressure`, which induces Gen2 GCs (1–2 per frame while rows realize); each Gen2
+  walks every live XAML object, hidden tabs included, so its pause grows with tab count (22→141 ms).
+  `Helpers/GcBallast` (512 MB untouched array, Program.Main) raises the pressure threshold: GC time per new tab
+  1.0–1.4 s → 0.1–0.6 s. Server GC / non-concurrent GC: no effect. The Details row template binds font sizes
+  with `x:Bind helpers:FontScaleService.Instance.*` (no `{Binding}` objects): alone no effect, but with the
+  ballast fewer objects pile up between Gen2s (per-Gen2 ~220 → ~155 ms, working set ~650 → ~610 MB at 6 tabs
+  vs 525 MB originally). Guarded by `DetailsRowTemplateTests`.
+- Assigning `ItemContainerStyle` discards and rebuilds every realized row. `ApplyDensity` in Details/List/Icon
+  only replaces the style when the row height (or Icon spacing) changes; startup re-applies density after the
+  first rows are shown, which used to build the first screen twice (cold start System32: rows 208 → 159,
+  stuck time in the first 3 s 849 → 454 ms).
+- Do **not** use data-driven `x:Load="{x:Bind …}"` in list row templates: a new or recycled container bound to an
+  item whose condition is already true never creates the element (Git M/? disappeared), and re-raising
+  PropertyChanged does not recover it. Fewer row elements would roughly halve each Gen2 pause; it needs another
+  mechanism.
 
 ## Performance work rules
 
