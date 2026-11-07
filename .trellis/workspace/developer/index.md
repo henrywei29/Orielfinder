@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-1.md`
-- **Total Sessions**: 14
-- **Last Active**: 2026-11-07
+- **Total Sessions**: 15
+- **Last Active**: 2026-11-08
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-1.md` | ~468 | Active |
+| `journal-1.md` | ~503 | Active |
 <!-- @@@/auto:active-documents -->
 
 ---
@@ -29,6 +29,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 15 | 2026-11-08 | Release OrielFolder 1.0.3 (user-requested) | `b227b72` | `release/1.0.3` |
 | 14 | 2026-11-07 | Folder open / new-tab perf + zip open in all views (Dev) | `7ac7541`, `27e72ca` | `rename/orielfolder` |
 | 13 | 2026-11-06 | Font settings fix + bundled Inter/Geist/Noto Sans SC (Dev, uncommitted) | - | `rename/orielfolder` |
 | 12 | 2026-11-06 | Release OrielFolder 1.0.2 (user-requested) | `ceeca96` | `release/1.0.2` |

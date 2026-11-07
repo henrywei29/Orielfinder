@@ -467,3 +467,37 @@ Task 11-07-folder-open-perf: cold start faster (System32 window 4.52->2.35 s, co
 
 - User checks Dev (tabs, font scale, Git column, zip open/Up/extract) and authorizes commit by explicit path
 - Optional trade-off: Details CacheLength 1 / release hidden-tab panels (per-Gen2 138->45 ms)
+
+
+## Session 15: Release OrielFolder 1.0.3 (user-requested)
+<!-- trellis-session: v=2 fp=01c2a9abe204353f -->
+
+**Date**: 2026-11-08
+**Task**: Release OrielFolder 1.0.3 (user-requested)
+**Branch**: `release/1.0.3`
+
+### Summary
+
+User: '把现在这个版本pull上去吧版本号顺延', confirmed '正式发布 1.0.3'. release/1.0.3 from origin/main (release identity) + merge rename/orielfolder (5784628), version 1.0.3 (package 1.0.3.0), unit 1259 pass in release identity, built/signed outside the container via WMI with existing cert F7940CE8, dist/ + README updated (b227b72), main fast-forwarded, tag v1.0.3, GitHub Release with single-file EXE + source zip. rename/orielfolder stays Dev.
+
+### Main Changes
+
+- Version 1.0.3 in csproj/manifest/iss/package-oriel.ps1/README; dist/ OrielFolder-1.0.3-x64-Setup (.exe + 3 .bin)
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b227b72` | release: OrielFolder 1.0.3（版本顺延 + 预构建安装包） |
+
+### Testing
+
+- [OK] [OK] unit 1259 pass (release identity); MSIX identity OrielFolder.Desktop 1.0.3.0; signatures Valid F7940CE8; GitHub asset digests match
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- User installs 1.0.3 over 1.0.2 to confirm settings are kept
