@@ -584,6 +584,8 @@ namespace OrielFolder
                 {
                     var activatedArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
                     Helpers.DebugLogger.Log($"[App] Activation kind: {activatedArgs.Kind}");
+                    // Settings → "Launch at startup": Windows started us at sign-in → open in the background.
+                    s_launchedByStartupTask = activatedArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.StartupTask;
                     var request = Helpers.LaunchRequest.Empty;
                     if (activatedArgs.Kind == Microsoft.Windows.AppLifecycle.ExtendedActivationKind.Launch)
                     {
@@ -670,6 +672,19 @@ namespace OrielFolder
         /// Consumed by MainWindow on Loaded, then set to null.
         /// </summary>
         internal static string? StartupArguments { get; set; }
+
+        private static bool s_launchedByStartupTask;
+
+        /// <summary>
+        /// True once if this process was started by the Windows startup task ("Launch at startup"),
+        /// so only the first main window starts in the background; later windows open normally.
+        /// </summary>
+        internal static bool ConsumeStartupTaskLaunch()
+        {
+            bool value = s_launchedByStartupTask;
+            s_launchedByStartupTask = false;
+            return value;
+        }
 
         /// <summary>StartupArguments가 --select로 왔는지. 폴더여도 들어가지 않고 부모에서 선택한다.</summary>
         internal static bool StartupSelect { get; set; }

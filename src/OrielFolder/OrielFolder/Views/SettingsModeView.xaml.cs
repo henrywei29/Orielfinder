@@ -191,6 +191,7 @@ public sealed partial class SettingsModeView : UserControl
 
             FavoritesTreeToggle.IsOn = _settings.ShowFavoritesTree;
             SystemTrayToggle.IsOn = _settings.MinimizeToTray;
+            _ = RefreshStartupLaunchAsync(); // state lives in Windows (startup task), not in app settings
             WindowPositionToggle.IsOn = _settings.RememberWindowPosition;
             // v1.5.2 (Discussion #30): 온보딩 표시 안 함 토글
 
@@ -406,6 +407,7 @@ public sealed partial class SettingsModeView : UserControl
 
         FavoritesTreeToggle.Toggled += (s, e) => { if (!_isLoading) _settings.ShowFavoritesTree = FavoritesTreeToggle.IsOn; };
         SystemTrayToggle.Toggled += (s, e) => { if (!_isLoading) _settings.MinimizeToTray = SystemTrayToggle.IsOn; };
+        StartupLaunchToggle.Toggled += OnStartupLaunchToggled;
         WindowPositionToggle.Toggled += (s, e) => { if (!_isLoading) _settings.RememberWindowPosition = WindowPositionToggle.IsOn; };
 
         ThemeSystem.Checked += (s, e) => { if (!_isLoading) _settings.Theme = "system"; };
@@ -527,7 +529,7 @@ public sealed partial class SettingsModeView : UserControl
             Helpers.CursorHelper.SetHandCursor(rb);
 
         foreach (var toggle in new[] {
-            FavoritesTreeToggle, SystemTrayToggle, WindowPositionToggle,
+            FavoritesTreeToggle, SystemTrayToggle, StartupLaunchToggle, WindowPositionToggle,
             GitIntegrationToggle,
             HexPreviewToggle, FileHashToggle, CopilotMenuToggle, ContextMenuToggle,
             IsolatedThumbsToggle,
@@ -759,6 +761,9 @@ public sealed partial class SettingsModeView : UserControl
             FavTreeDesc.Text = _loc.Get("Settings_FavoritesTreeDesc");
             SysTrayLabel.Text = _loc.Get("Settings_SystemTray");
             SysTrayDesc.Text = _loc.Get("Settings_SystemTrayDesc");
+            StartupLaunchLabel.Text = _loc.Get("Settings_StartupLaunch");
+            StartupLaunchDesc.Text = _loc.Get("Settings_StartupLaunchDesc");
+            if (_startupLaunchNoteKey != null) StartupLaunchNote.Text = _loc.Get(_startupLaunchNoteKey);
             WinPosLabel.Text = _loc.Get("Settings_WindowPosition");
             WinPosDesc.Text = _loc.Get("Settings_WindowPositionDesc");
 
