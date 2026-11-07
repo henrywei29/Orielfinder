@@ -84,8 +84,19 @@ paths:
 
 - Miller column area = `Star`, preview = `Pixel`. Making both `Star` causes proportional jumps on window resize
   (`ApplyMillerColumnWidth()` in SplitPreviewManager).
-- Details header Grid and row template Grid compute `*` independently; splitter widths are accumulated from
-  header `ColumnDefinition`s in `RecalcCellTotalWidths()` — don't round per cell.
+- Details header Grid and row template Grid compute `*` independently; row cells get their widths from the header
+  `ColumnDefinition.ActualWidth`s (`RefreshColumnWidths` → `ApplyCellWidths`) — don't round per cell.
+- Details column resize is Explorer-style (`DetailsModeView.Columns.cs`, rules in `Helpers/DetailsColumnLayout`):
+  the separator between two columns only resizes the column on its left; every column to its right keeps its width
+  and moves. Name stretches (`*`) until the first separator drag, which fixes Name to its current width; free space
+  then goes to a trailing filler column. Separators are our own 8-px hit areas over the 2-px gap columns (rows keep
+  the matching 2-px right margin) with a visible 1-px line (`ColumnSeparatorLineStyle`) — no `GridSplitter`
+  (its PreviousAndNext behaviour moved the neighbour instead). Widths are saved in `DetailsViewSort.ColumnWidths`
+  and broadcast to all Details views like the column order. Wider columns scroll horizontally: the ListView has
+  horizontal scrolling and the header sits in `HeaderScroller` (MinWidth = view width), kept at the list's
+  horizontal offset from `ViewChanging`/`ViewChanged`.
+- Header menu: every column except search-only Location can be toggled (at least one stays visible); labels are
+  localized. The Git menu entry is a preference (`GitColumnWanted`): the column still appears only in Git folders.
 - `GridSplitter` / sizers must account for `RasterizationScale`.
 
 ## Virtualization & hot paths (performance budgets enforced by tests)
